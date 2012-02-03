@@ -13,6 +13,7 @@
 #include "console.h"
 #include "addrspace.h"
 #include "synch.h"
+#include "synchconsole.h"
 
 //----------------------------------------------------------------------
 // StartProcess
@@ -74,8 +75,7 @@ WriteDone (int arg)
 //      the output.  Stop when the user types a 'q'.
 //----------------------------------------------------------------------
 
-void
-ConsoleTest (char *in, char *out)
+void ConsoleTest (char *in, char *out)
 {
     char ch;
 
@@ -95,4 +95,13 @@ ConsoleTest (char *in, char *out)
         console->PutChar('>');
         writeDone->P (); // wait for write to finish
     }
+}
+
+void SynchConsoleTest (char *in, char *out) {
+    char ch;
+    SynchConsole *synchconsole = new SynchConsole(in, out);
+    while ((ch = synchconsole->SynchGetChar()) != EOF) {
+        synchconsole->SynchPutChar(ch);
+    }
+    //fprintf(stderr, "Solaris: EOF detected in SynchConsole!\n");
 }
