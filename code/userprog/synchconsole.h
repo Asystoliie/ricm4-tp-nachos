@@ -1,5 +1,6 @@
 #ifndef SYNCHCONSOLE_H
 #define SYNCHCONSOLE_H
+
 #include "copyright.h"
 #include "utility.h"
 #include "console.h"

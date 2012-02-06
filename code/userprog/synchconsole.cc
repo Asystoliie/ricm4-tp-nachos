@@ -20,7 +20,7 @@ SynchConsole::SynchConsole(char *readFile, char *writeFile) {
     readAvail = new Semaphore("read avail", 0);
     writeDone = new Semaphore("write done", 0);
     mutex = new Semaphore("mutex", 1);
-    console = new Console (in, out, ReadAvail, WriteDone, 0);
+    console = new Console (readFile, writeFile, ReadAvail, WriteDone, 0);
 }
 
 SynchConsole::~SynchConsole() {
