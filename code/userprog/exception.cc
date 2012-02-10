@@ -71,13 +71,15 @@ void CopyStringFromMachine(int from, char *to, unsigned size) {
    */
   unsigned int i;
   int buffer;
-  for (i = 0; i < size - 1; i++) {
+  for (i = 0; i < size-1; i++) {
     machine->ReadMem(from+i,1, &buffer);
-    
+    if((char)buffer=='\0'){
+	break;
+    }
     to[i] = (char) buffer;
-    printf("%c",to[i]);
+    //printf("%c",to[i]);
   }
-  to[size-1] = '\0';
+  to[i-1] = '\0';
 }
 
 void

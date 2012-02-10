@@ -53,6 +53,7 @@ void SynchConsole::SynchPutString(const char s[]) {
      * * */
     mutex->P();
     int i = 0;
+    
     for(i=0; i<MAX_STRING_SIZE-1;i++) {
 	if(s[i] == '\0') {
 	  break;
