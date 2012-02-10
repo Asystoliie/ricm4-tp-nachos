@@ -69,9 +69,13 @@ UpdatePC ()
 void CopyStringFromMachine(int from, char *to, unsigned size) {
   /* On copie bit à bit, en faisant attention à bien convertir explicitement en Char 
    */
-  for (int i = 0; i < size - 1; i++) {
-    machine->ReadMem(from+i, 1, to+i);
-    to[i] = (char) to[i];
+  unsigned int i;
+  int buffer;
+  for (i = 0; i < size - 1; i++) {
+    machine->ReadMem(from+i,1, &buffer);
+    
+    to[i] = (char) buffer;
+    printf("%c",to[i]);
   }
   to[size-1] = '\0';
 }
@@ -98,13 +102,13 @@ ExceptionHandler (ExceptionType which)
 
       case SC_PutString: {
         DEBUG('a', "PutString, initiated by user program.\n");
-        char * buffer = new char[MAX_STRING_SIZE];
+        char *buffer = new char[MAX_STRING_SIZE];
         // Le premier argument (registre R4) c'est l'adresse de la chaine de caractere
         // Que l'ont recopie dans le monde linux
         // R4 >> pointeur vers la mémoire  MIPS
         CopyStringFromMachine(machine->ReadRegister(4), buffer, MAX_STRING_SIZE);
         synchconsole->SynchPutString(buffer);
-        delete buffer;
+        delete [] buffer;
         break;
       }
 

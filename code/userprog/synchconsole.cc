@@ -53,19 +53,27 @@ void SynchConsole::SynchPutString(const char s[]) {
      * * */
     mutex->P();
     int i = 0;
-    while(s[i] != '\0')
+    for(i=0; i<MAX_STRING_SIZE-1;i++) {
+	if(s[i] == '\0') {
+	  break;
+        }
         this->SynchPutChar(s[i]);
+    }
     mutex->V();
 }
 
 void SynchConsole::SynchGetString(char *s, int n) {
   /* On utilise un mutex pour que tous les appels SynchGetString soient
    * atomiques.
-   * * */                                                                                             
+   * * */
   int i;
-  mutex->P();                                                                                         
-  for (i=0; i<n-1; i++)
-    s[i] = this->SynchGetChar();
+  mutex->P();
+  for (i=0; i<n-1; i++) {
+      if(s[i] == '\0') {
+          break;
+      }
+      s[i] = this->SynchGetChar();
+  }
   s[n-1] = '\0';
   mutex->V();
 }
