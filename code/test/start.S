@@ -128,14 +128,15 @@ Yield:
 	syscall
 	j	$31
 	.end Yield
+
 	.globl PutChar
 	.ent PutChar
 PutChar:
 	/* On place le signal dans le registre R2
         Il va servir au handler d'exceptions pour qu'il puisse
         savoir qui sera le traitant de cette exception.
-      */
-	addiu $2,$0,SC_Putchar
+	*/
+	addiu $2,$0,SC_PutChar
      /* syscall provoque un déroutement et place le compteur de
         programme (PC) à la première instruction du traitant :
         ExceptionHandler

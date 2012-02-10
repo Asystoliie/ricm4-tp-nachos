@@ -90,6 +90,7 @@ ExceptionHandler (ExceptionType which)
         synchconsole->SynchPutChar((char)(machine->ReadRegister(4)));
         break;
       }
+      
       default: {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);
