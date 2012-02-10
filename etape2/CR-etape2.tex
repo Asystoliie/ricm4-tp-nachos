@@ -1,0 +1,80 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\usepackage{subfigure}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage[usenames,dvipsnames]{color}
+\definecolor{light-gray}{gray}{0.9}
+\definecolor{gray}{gray}{}
+\lstset{language=sh,basicstyle=\small,backgroundcolor=\color{light-gray}, frameround=fttt}
+\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+%top=tlength, bottom=blength,
+%partie concernant la gestion des entêtes
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage{lastpage}
+\renewcommand\headrulewidth{1pt}
+\fancyhead[L]{\textsc{TP2 Multicast}}
+\fancyhead[R]{\textsc{Polytech' Grenoble}}
+\renewcommand\footrulewidth{1pt}
+\fancyfoot[R]{ \textsc{RICM 4}}
+
+\begin{document}
+\begin{titlepage}
+
+\begin{center}
+
+
+% Upper part of the page
+\includegraphics[width=0.25\textwidth]{./logo}\\[1cm]    
+
+\textsc{\LARGE Polytech' Grenoble}\\[1.5cm]
+
+\textsc{\Large RICM 4\`eme ann\'ee}\\[1.2cm]
+
+
+% Title
+\HRule \\[0.4cm]
+{ \huge \bfseries NachOS\\[0.6cm]
+Etape 2: Entrées/Sorties Console }
+\\[0.4cm]
+
+\HRule \\[2cm]
+
+% Author and supervisor
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+\emph{\'Etudiants:}\\
+Elizabeth \textsc{Paz} \\
+Salem \textsc{Harrache}
+\end{flushleft}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{flushright} \large
+\emph{Professeur:} \\
+Vania \textsc{Marangozova} 
+\end{flushright}
+\end{minipage}
+
+\vfill
+
+% Bottom of the page
+{\large  février 2012}
+
+\end{center}
+
+\end{titlepage}
+
+\section{Entrées/Sorties asynchrones}
+
+\section{Entrées/Sorties synchrones}
+
+\section{Appel système \textit{PutChar}}
+
+\end{document}
+
+
