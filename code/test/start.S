@@ -148,6 +148,25 @@ PutChar:
         */
 	j	$31
 	.end PutChar
+     .globl PutString
+     .ent PutString
+PutString:
+	/* On place le signal dans le registre R2
+        Il va servir au handler d'exceptions pour qu'il puisse
+        savoir qui sera le traitant de cette exception.
+	*/
+	addiu $2,$0,SC_PutString
+     /* syscall provoque un déroutement et place le compteur de
+        programme (PC) à la première instruction du traitant :
+        ExceptionHandler
+        */
+	syscall
+     /* Maintenant on revient au programme appellant
+        Le registre R31 sauvegarde l'adresse de retour de la
+        fonction appellante
+        */
+	j	$31
+	.end PutString
 
 /* dummy function to keep gcc happy */
         .globl  __main
