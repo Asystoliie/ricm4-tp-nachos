@@ -17,6 +17,9 @@ class SynchConsole {
         // Unix getchar(3S)
         void SynchPutString(const char *s); // Unix puts(3S)
         void SynchGetString(char *s, int n);
+        void SynchGetString(char *s, int n, char delim);
+        void SynchPutInt(int value);
+        void SynchGetInt(int * address);
         // Unix fgets(3S)
     private:
         Console *console;
