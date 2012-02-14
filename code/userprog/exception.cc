@@ -66,20 +66,33 @@ UpdatePC ()
 //----------------------------------------------------------------------
 
 
-void CopyStringFromMachine(int from, char *to, unsigned size) {
-  /* On copie bit à bit, en faisant attention à bien convertir explicitement en Char 
+char * GetStringFromMachine(int from, unsigned max_size) {
+  /* On copie octet par octet, de la mémoire user vers la mémoire noyau (buffer)
+   * en faisant attention à bien convertir explicitement en char
    */
+  int byte;
   unsigned int i;
-  int buffer;
-  for (i = 0; i < size-1; i++) {
-    machine->ReadMem(from+i,1, &buffer);
-    if((char)buffer=='\0'){
-	break;
-    }
-    to[i] = (char) buffer;
-    //printf("%c",to[i]);
+  char * buffer =  new char[max_size];
+  for(i = 0; i < max_size-1; i++) {
+    machine->ReadMem(from+i,1, &byte);
+    if((char)byte=='\0')
+      break;
+    buffer[i] = (char) byte;
   }
-  to[i-1] = '\0';
+  buffer[i] = '\0';
+  return buffer;
+}
+
+void WriteStringToMachine(char * string, int to, unsigned max_size) {
+  /* On copie octet par octet, en faisant attention à bien convertir
+   * explicitement en char
+   */
+  char * bytes = (char *)(&machine->mainMemory[to]);
+  for(unsigned int i = 0; i < max_size-1; i++) {
+    bytes[i] = string[i];
+    if(string[i]=='\0')
+      break;
+  }
 }
 
 void
@@ -88,36 +101,55 @@ ExceptionHandler (ExceptionType which)
     int type = machine->ReadRegister (2);
 
     if (which == SyscallException) {
-      switch (type) {
+        switch (type) {
 
-      case SC_Halt: {
-        DEBUG('a', "Shutdown, initiated by user program.\n");
-        interrupt->Halt();
-        break;
-      }
+        case SC_Halt: {
+          DEBUG('a', "Shutdown, initiated by user program.\n");
+          interrupt->Halt();
+          break;
+        }
 
-      case SC_PutChar: {
-        DEBUG('a', "PutChar, initiated by user program.\n");
-        synchconsole->SynchPutChar((char)(machine->ReadRegister(4)));
-        break;
-      }
+        case SC_PutChar: {
+          DEBUG('a', "PutChar, initiated by user program.\n");
+          synchconsole->SynchPutChar((char)(machine->ReadRegister(4)));
+          break;
+        }
 
-      case SC_PutString: {
-        DEBUG('a', "PutString, initiated by user program.\n");
-        char *buffer = new char[MAX_STRING_SIZE];
-        // Le premier argument (registre R4) c'est l'adresse de la chaine de caractere
-        // Que l'ont recopie dans le monde linux
-        // R4 >> pointeur vers la mémoire  MIPS
-        CopyStringFromMachine(machine->ReadRegister(4), buffer, MAX_STRING_SIZE);
-        synchconsole->SynchPutString(buffer);
-        delete [] buffer;
-        break;
-      }
+        case SC_PutString: {
+          DEBUG('a', "PutString, initiated by user program.\n");
+          // Le premier argument (registre R4) c'est l'adresse de la chaine de caractere
+          // Que l'ont recopie dans le monde linux
+          // R4 >> pointeur vers la mémoire  MIPS
+          char *buffer = GetStringFromMachine(machine->ReadRegister(4), MAX_STRING_SIZE);
+          synchconsole->SynchPutString(buffer);
+          delete [] buffer;
+          break;
+        }
 
-      default: {
-        printf("Unexpected user mode exception %d %d\n", which, type);
-        ASSERT(FALSE);
-      }
+        case SC_GetChar: {
+          DEBUG('a', "GetChar, initiated by user program.\n");
+          machine->WriteRegister(2,(int) synchconsole->SynchGetChar());
+          break;
+        }
+
+        case SC_GetString: {
+          DEBUG('a', "GetString, initiated by user program.\n");
+
+          int to = machine->ReadRegister(4);
+          int size = machine->ReadRegister(5);
+          // On donne pas acces à la mémoire directement, on ecrit ecrit dans un buffer
+          // Peut etre pas obligé, mais au cas ou on utilise un buffer..
+          char * buffer =  new char[MAX_STRING_SIZE];
+          synchconsole->SynchGetString(buffer, size);
+          WriteStringToMachine(buffer, to, size);
+          delete [] buffer;
+          break;
+        }
+
+        default: {
+          printf("Unexpected user mode exception %d %d\n", which, type);
+//          ASSERT(FALSE);
+        }
       }
     }
 

@@ -46,35 +46,35 @@ char SynchConsole::SynchGetChar() {
     return console->GetChar();
 }
 
-void SynchConsole::SynchPutString(const char s[]) {
+void SynchConsole::SynchPutString(const char string[]) {
     /* On utilise un mutex pour que les appels SynchPutString soient atomiques
      * C'est à dire que deux appels à SynchPutString() affichent correctement
      * les chaines de caractères...
      * * */
     mutex->P();
-    int i = 0;
-    
-    for(i=0; i<MAX_STRING_SIZE-1;i++) {
-	if(s[i] == '\0') {
-	  break;
-        }
-        this->SynchPutChar(s[i]);
+    for(int i=0; i<MAX_STRING_SIZE-1;i++) {
+        if(string[i] == '\0')
+            break;
+        this->SynchPutChar(string[i]);
     }
     mutex->V();
 }
 
-void SynchConsole::SynchGetString(char *s, int n) {
+void SynchConsole::SynchGetString(char *buffer, int n) {
   /* On utilise un mutex pour que tous les appels SynchGetString soient
    * atomiques.
    * * */
   int i;
+  char c;
   mutex->P();
   for (i=0; i<n-1; i++) {
-      if(s[i] == '\0') {
-          break;
-      }
-      s[i] = this->SynchGetChar();
+    c = this->SynchGetChar();
+    // CTRL+D pour arrêter la saisie
+    if(c == EOF)
+      break;
+    else
+      buffer[i] = c;
   }
-  s[n-1] = '\0';
+  buffer[i] = '\0';
   mutex->V();
 }

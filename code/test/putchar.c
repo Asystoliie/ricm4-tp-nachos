@@ -3,5 +3,5 @@
 int main() {
     PutChar('a');
     PutChar('\n');
-    Halt();
+    return 0;
 }

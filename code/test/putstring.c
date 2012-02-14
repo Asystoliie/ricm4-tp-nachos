@@ -1,8 +1,6 @@
 #include "syscall.h"
 
 int main() {
-    PutString("Salem fait\n");
-    //PutChar('\n');
-    //Halt();
+    PutString("Salem fait du beau boulot je trouve\n");
     return 0;
 }
