@@ -60,7 +60,7 @@ void SynchConsole::SynchPutString(const char string[]) {
     mutex->V();
 }
 
-void SynchConsole::SynchGetString(char *buffer, int n) {
+void SynchConsole::SynchGetString(char *buffer, int n, char delim) {
   /* On utilise un mutex pour que tous les appels SynchGetString soient
    * atomiques.
    * * */
@@ -70,11 +70,31 @@ void SynchConsole::SynchGetString(char *buffer, int n) {
   for (i=0; i<n-1; i++) {
     c = this->SynchGetChar();
     // CTRL+D pour arrêter la saisie
-    if(c == EOF)
+    if(c == delim)
       break;
     else
       buffer[i] = c;
   }
   buffer[i] = '\0';
   mutex->V();
+}
+
+
+void SynchConsole::SynchGetString(char *buffer, int n) {
+  this->SynchGetString(buffer, n, EOF);
+}
+
+void SynchConsole::SynchPutInt(int value) {
+  char * buffer = new char[MAX_STRING_SIZE];
+  // on ecrit dans le buffer la valeur avec sprintf
+  sprintf(buffer, "%d", value);
+  this->SynchPutString(buffer);
+  delete [] buffer;
+}
+
+void SynchConsole::SynchGetInt(int * address) {
+  char * buffer = new char[MAX_STRING_SIZE];
+  this->SynchGetString(buffer, MAX_STRING_SIZE, '\n');
+  sscanf(buffer, "%d", address);
+  delete [] buffer;
 }

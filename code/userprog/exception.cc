@@ -66,13 +66,13 @@ UpdatePC ()
 //----------------------------------------------------------------------
 
 
-char * GetStringFromMachine(int from, unsigned max_size) {
+char * ReadStringFromMachine(int from, unsigned max_size) {
   /* On copie octet par octet, de la mémoire user vers la mémoire noyau (buffer)
    * en faisant attention à bien convertir explicitement en char
    */
   int byte;
   unsigned int i;
-  char * buffer =  new char[max_size];
+  char * buffer = new char[max_size];
   for(i = 0; i < max_size-1; i++) {
     machine->ReadMem(from+i,1, &byte);
     if((char)byte=='\0')
@@ -120,7 +120,7 @@ ExceptionHandler (ExceptionType which)
           // Le premier argument (registre R4) c'est l'adresse de la chaine de caractere
           // Que l'ont recopie dans le monde linux
           // R4 >> pointeur vers la mémoire  MIPS
-          char *buffer = GetStringFromMachine(machine->ReadRegister(4), MAX_STRING_SIZE);
+          char *buffer = ReadStringFromMachine(machine->ReadRegister(4), MAX_STRING_SIZE);
           synchconsole->SynchPutString(buffer);
           delete [] buffer;
           break;
@@ -135,20 +135,40 @@ ExceptionHandler (ExceptionType which)
         case SC_GetString: {
           DEBUG('a', "GetString, initiated by user program.\n");
 
+          // le premier argument est une adresse (char *)
           int to = machine->ReadRegister(4);
+          // le second est un int >> la taille
           int size = machine->ReadRegister(5);
           // On donne pas acces à la mémoire directement, on ecrit ecrit dans un buffer
           // Peut etre pas obligé, mais au cas ou on utilise un buffer..
-          char * buffer =  new char[MAX_STRING_SIZE];
+          char * buffer = new char[MAX_STRING_SIZE];
           synchconsole->SynchGetString(buffer, size);
           WriteStringToMachine(buffer, to, size);
           delete [] buffer;
           break;
         }
 
+        case SC_PutInt: {
+          DEBUG('a', "PutInt, initiated by user program.\n");
+
+          // le premier est la valeur int
+          int value = machine->ReadRegister(4);
+          synchconsole->SynchPutInt(value);
+          break;
+        }
+
+        case SC_GetInt: {
+          DEBUG('a', "GetInt, initiated by user program.\n");
+          int value;
+          synchconsole->SynchGetInt(&value);
+          int * mem_value = (int *)(&machine->mainMemory[machine->ReadRegister(4)]);
+          *mem_value = value;
+          break;
+        }
+
         default: {
           printf("Unexpected user mode exception %d %d\n", which, type);
-//          ASSERT(FALSE);
+          ASSERT(FALSE);
         }
       }
     }
