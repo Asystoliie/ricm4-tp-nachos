@@ -2,9 +2,8 @@
 
 int main() {
   PutString("Veuillez saisir un nombre : \n");
-  int value;
-  GetInt(&value);
-  PutString("++value = ");PutInt(++value);PutChar('\n');
+  int nombre = GetInt();
+  PutString("Nombre +10 = ");PutInt(nombre+10);PutChar('\n');
   PutString("Veuillez saisir une lettre : \n");
   char c = GetChar();
   PutString("Voici la lettre : ");
@@ -12,7 +11,7 @@ int main() {
   PutString("\nVeuillez saisir une phrase (max = 100) : ");
   char buffer[100];
   GetString(buffer,100);
-  PutString("Voici la phrase : ");
+  PutString("\nVoici la phrase : ");
   PutString(buffer);
   PutChar('\n');
   return 0;

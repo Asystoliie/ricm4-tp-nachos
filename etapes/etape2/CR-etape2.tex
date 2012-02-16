@@ -1,0 +1,692 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\usepackage{subfigure}
+\usepackage{multicol}
+\usepackage[usenames,dvipsnames]{color}
+\definecolor{darkgray}{rgb}{0.95,0.95,0.95}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{textcomp}
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+\lstset{
+    backgroundcolor=\color{lbcolor},
+    tabsize=4,
+    rulecolor=,
+    language=C++,
+    basicstyle=\scriptsize,
+    upquote=true,
+    aboveskip={1.5\baselineskip},
+    columns=fixed,
+    showstringspaces=false,
+    extendedchars=true,
+    breaklines=true,
+    prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+    frame=single,
+    showtabs=false,
+    showspaces=false,
+    showstringspaces=false,
+    identifierstyle=\ttfamily,
+    keywordstyle=\color[rgb]{0,0,1},
+    commentstyle=\color[rgb]{0.133,0.545,0.133},
+    stringstyle=\color[rgb]{0.627,0.126,0.941},
+}
+\lstset{language=C++}
+\lstset{backgroundcolor=\color{darkgray}}
+
+\usepackage[left=1.0cm, right=1.0cm, top=2cm, bottom=4cm]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage{lastpage}
+\renewcommand\headrulewidth{1pt}
+\fancyhead[L]{\textsc{Nachos Étape 2 : Entrées/Sorties}}
+\fancyhead[R]{\textsc{Polytech' Grenoble}}
+\renewcommand\footrulewidth{1pt}
+\fancyfoot[R]{ \textsc{RICM 4}}
+
+\begin{document}
+\begin{titlepage}
+
+\begin{center}
+
+
+% Upper part of the page
+\includegraphics[width=0.25\textwidth]{./images/logo}\\[1cm]
+
+\textsc{\LARGE Polytech' Grenoble}\\[1.5cm]
+
+\textsc{\Large RICM 4\`eme ann\'ee}\\[1.2cm]
+
+
+% Title
+\HRule \\[0.4cm]
+{ \huge \bfseries NachOS\\[0.6cm]
+Etape 2: Entrées/Sorties}
+\\[0.4cm]
+
+\HRule \\[2cm]
+
+% Author and supervisor
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+\emph{\'Etudiants:}\\
+Elizabeth \textsc{Paz} \\
+Salem \textsc{Harrache}
+\end{flushleft}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{flushright} \large
+\emph{Professeur:} \\
+Vania \textsc{Marangozova}
+\end{flushright}
+\end{minipage}
+
+\vfill
+
+% Bottom of the page
+{\large  février 2012}
+
+\end{center}
+
+\end{titlepage}
+
+\section{Entrées/Sorties asynchrones}
+
+l'objet Console est asynchrones, dans le programme de test (ConsoleTest) on
+gère manuellement la syncronisation avec deux sémphores (un pour l'écriture et
+un autre pour la lecture) et des handlers qui seront appellés par le traitant
+une fois la tâche de lecture/ecriture effectuée. Dans cette partie, on ajoute la
+prise en compte du caractère de fin de fichier (EOF).
+
+\textit{code/usrprog/progtest.cc}
+\begin{lstlisting}
+void ConsoleTest (char *in, char *out)
+{
+    char ch;
+
+    console = new Console (in, out, ReadAvail, WriteDone, 0);
+    readAvail = new Semaphore ("read avail", 0);
+    writeDone = new Semaphore ("write done", 0);
+
+    for (;;) {
+        readAvail->P (); // wait for character to arrive
+        ch = console->GetChar ();
+        if (ch == EOF or ch =='q')
+            return;
+        console->PutChar('<');
+        writeDone->P ();
+        console->PutChar(ch); // We echo it
+        writeDone->P ();
+        console->PutChar('>');
+        writeDone->P (); // wait for write to finish
+    }
+}
+\end{lstlisting}
+
+Comme on le voir, a chaque fois qu'on écrit ou lit un caractère il faut
+utiliser le sémaphore explicitement pour obliger le programme à se bloquer et
+reprendre qu'une fois le caractère lu/écrit
+
+\section{Entrées/Sorties synchrones}
+On va maintenant gérer la syncronisation directement dans la Console. Pour ça
+on va implementer la classe SynchConsole qui aura utilisé de façon
+transparentlese les sémphores. On ajoute les deux fichiers
+\textit{code/userprog/synchconsole.h} et \textit{code/userprog/synchconsole.cc}
+
+\textit{code/userprog/synchconsole.h}
+\begin{lstlisting}
+#ifndef SYNCHCONSOLE_H
+#define SYNCHCONSOLE_H
+
+#include "copyright.h"
+#include "utility.h"
+#include "console.h"
+
+class SynchConsole {
+    public:
+        SynchConsole(char *readFile, char *writeFile);
+        // initialize the hardware console device
+        ~SynchConsole();
+        // clean up console emulation
+        void SynchPutChar(const char ch); // Unix putchar(3S)
+        char SynchGetChar(); // Unix getchar(3S)
+        void SynchPutString(const char *s); // Unix puts(3S)
+        void SynchGetString(char *s, int n); // Unix fgets(3S)
+    private:
+        Console *console;
+};
+#endif // SYNCHCONSOLE_H
+\end{lstlisting}
+
+\textit{code/userprog/synchconsole.cc}
+\begin{lstlisting}
+#include "copyright.h"
+#include "system.h"
+#include "synchconsole.h"
+#include "synch.h"
+
+
+static Semaphore *readAvail;
+static Semaphore *writeDone;
+
+static void ReadAvail(int arg) {
+    readAvail->V();
+}
+
+static void WriteDone(int arg) {
+    writeDone->V();
+}
+
+SynchConsole::SynchConsole(char *readFile, char *writeFile) {
+    /* Les sémaphores sont initialisé à 0 car par défaut il n'y a rien à lire
+     * et on n'a rien à écrire
+     */
+    readAvail = new Semaphore("read avail", 0);
+    writeDone = new Semaphore("write done", 0);
+    console = new Console (readFile, writeFile, ReadAvail, WriteDone, 0);
+}
+
+SynchConsole::~SynchConsole() {
+    delete console;
+    delete writeDone;
+    delete readAvail;
+    delete mutex;
+}
+
+void SynchConsole::SynchPutChar(const char ch) {
+    /* On écrit un char et on se bloque en attendant que le traitant appelle
+     * (WriteDone>V())
+     */
+    console->PutChar(ch);
+    writeDone->P();
+}
+
+char SynchConsole::SynchGetChar() {
+    /* Lorsqu'il y a rien à lire, on se bloque, et dès qu'il y a quelque chose
+     * à lire, on sait qu'on sera débloqué (ReadAvail->V())
+     */
+    readAvail->P();
+    return console->GetChar();
+}
+
+void SynchConsole::SynchPutString(const char string[]) {
+}
+
+void SynchConsole::SynchGetString(char *buffer, int n) {
+}
+\end{lstlisting}
+
+On peut tester la synchconsole depuis le fichier
+\textit{code/userprog/synchconsole.h}
+
+\begin{lstlisting}
+void SynchConsoleTest(char *in, char*out)
+{
+    char ch;
+    synchconsole = new SynchConsole(in, out);
+    while ((ch = synchconsole->SynchGetChar()) != EOF )
+      synchconsole->SynchPutChar(ch);
+    fprintf(stderr, "Solaris: EOF detected in SynchConsole!\n");
+}
+\end{lstlisting}
+
+\section{Appels systèmes}
+Dans cette partie on va implémenter les appels systeme qui utiliseront notre
+synconsole.
+\subsection{PutChar}
+\subsubsection{Mise en place}
+On commence par déclarrer la fonction d'appel système \textit{void PutChar(char
+c)} et son numéro
+
+\textit{code/userprog/syscall.h}
+\begin{lstlisting}
+#define SC_PutChar  11
+// ...
+void PutChar(char c);
+\end{lstlisting}
+
+Un appel système entraine un changement d'environement, du mode au mode noyau.
+Il faut donc écrire (en assembleur) le code qui permet de faire cette
+interuption pour basculer en mode noyau et prévoir le retour au programme
+utilisateur :
+
+\textit{code/test/start.S}
+\begin{lstlisting}
+    .globl PutChar
+    .ent PutChar
+PutChar:
+    /* On place le signal dans le registre R2
+        Il va servir au handler d'exceptions pour qu'il puisse
+        savoir qui sera le traitant de cette exception.
+    */
+    addiu $2,$0,SC_PutChar
+     /* syscall provoque un déroutement et place le compteur de
+        programme (PC) à la première instruction du traitant :
+        ExceptionHandler
+        */
+    syscall
+     /* Maintenant on revient au programme appellant
+        Le registre R31 sauvegarde l'adresse de retour de la
+        fonction appellante
+        */
+    j    $31
+    .end PutChar
+\end{lstlisting}
+
+Le traitrement sera fait dans \textit{code/userprog/exception.cc}. Pour
+faciliter l'ajout de nouveaux appels systèmes on utilisera un switch/case qui
+associe un traitrement a chaque numéro d'appel système.
+
+\textit{code/userprog/exception.cc}
+\begin{lstlisting}
+void ExceptionHandler (ExceptionType which)
+{
+    int type = machine->ReadRegister (2);
+
+    if (which == SyscallException) {
+        switch (type) {
+
+        case SC_Halt: {
+          DEBUG('a', "Shutdown, initiated by user program.\n");
+          interrupt->Halt();
+          break;
+        }
+
+        case SC_PutChar: {
+          DEBUG('a', "PutChar, initiated by user program.\n");
+          // On récupère le premier parametre
+          char c = (char)(machine->ReadRegister(4));
+          // on l'affiche dans grâce a synchonsole
+          synchconsole->SynchPutChar(c);
+          break;
+        }
+
+        default: {
+          printf("Unexpected user mode exception %d %d\n", which, type);
+          ASSERT(FALSE);
+        }
+      }
+    }
+
+    // LB: Do not forget to increment the pc before returning!
+    UpdatePC ();
+    // End of addition
+}
+\end{lstlisting}
+
+L'objet synchconsole appartient au noyau, il faut donc l'initialiser dans le
+fichier \textit{code/threads/system.cc} comme suit
+
+\begin{lstlisting}
+#ifdef USER_PROGRAM        // requires either FILESYS or FILESYS_STUB
+Machine *machine;        // user program memory and registers
+SynchConsole *synchconsole; // On déclare la synchconsole
+#endif
+// [..]
+void Initialize (int argc, char **argv)
+{
+// ...
+#ifdef USER_PROGRAM
+machine = new Machine (debugUserProg);    // this must come first
+synchconsole = new SynchConsole(NULL, NULL); // On déclare la synchconsole sans
+aucun in/out
+#endif
+// ..
+}
+
+void Cleanup ()
+{
+// ..
+#ifdef USER_PROGRAM
+delete machine;
+delete synchconsole;
+#endif
+// ..
+}
+\end{lstlisting}
+
+\textit{code/threads/system.h}
+\begin{lstlisting}
+#ifdef USER_PROGRAM
+#include "machine.h"
+#include "../userprog/synchconsole.h"
+extern Machine *machine;    // user program memory and registers
+extern SynchConsole *synchconsole;
+#endif
+\end{lstlisting}
+
+Maintenant on peut utiliser synchconsole en important \textit{system.h}.
+
+\subsubsection{Test de PutChar()}
+
+\textit{code/userprog/putchar.c}
+\begin{lstlisting}
+#include "syscall.h"
+
+int main() {
+    PutChar('a');
+    PutChar('\n');
+    Halt();
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+$ ./build-origin/nachos-userprog -x ./build/putchar
+a
+Machine halting!
+
+Ticks: total 253, idle 200, system 30, user 23
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 2
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...
+\end{lstlisting}
+
+\subsubsection{Terminaison}
+Un programme est obligé d'appeller Halt() pour dire qu'il s'est terminé, ce qui
+n'est pas pratique en temps normal. Un programme est lancé par la méthode
+\textit{Machine::Run()} qui ne termine pas :
+
+\textit{code/machine/mipssim.cc}
+\begin{lstlisting}
+void Machine::Run()
+{
+    // [...]
+    interrupt->setStatus(UserMode);
+    for (;;) {
+        OneInstruction(instr);
+        interrupt->OneTick();
+        if (singleStep && (runUntilTime <= stats->totalTicks))
+            Debugger();
+    }
+}
+\end{lstlisting}
+
+L'absence de \textit{Halt()} provoque une interuption :
+
+\begin{lstlisting}
+./build-origin/nachos-userprog -x ./build/putchar
+a
+Unexpected user mode exception 1 1
+\end{lstlisting}
+
+L'interuption 1 correspond à l'appel système \textit{Exit()}, il faut
+donc implementer cet appel système, qui se contentera, dans un premier temps,
+d'eteindre explicitement la machine:
+
+\textit{code/userprog/exception.cc}
+\begin{lstlisting}
+        case SC_Exit: {
+          DEBUG('a', "Exit, initiated by user program.\n");
+          interrupt->Halt();
+          break;
+        }
+\end{lstlisting}
+
+\begin{lstlisting}
+$ ./build-origin/nachos-userprog -x ./build/putchar
+a
+Machine halting!
+
+Ticks: total 260, idle 200, system 30, user 30
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 2
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...
+\end{lstlisting}
+
+\subsection{PutString}
+La difference entre PutChar et PutString c'est que PutString prend une pointeur
+sur une chaine de caractères en mémoire \textbf{user}. On va donc devoir par
+précaution, préalablement la copier dans un buffer en mémoire \textbf{noyau}.
+
+\textit{code/userprog/exception.cc}
+\begin{lstlisting}
+char * ReadStringFromMachine(int from, unsigned max_size) {
+  /* On copie octet par octet, de la mémoire user vers la mémoire noyau (buffer)
+   * en faisant attention à bien convertir explicitement en char
+   */
+  int byte;
+  unsigned int i;
+  char * buffer = new char[max_size];
+  for(i = 0; i < max_size-1; i++) {
+    machine->ReadMem(from+i,1, &byte);
+    if((char)byte=='\0')
+      break;
+    buffer[i] = (char) byte;
+  }
+  buffer[i] = '\0';
+  return buffer;
+}
+\end{lstlisting}
+
+La mie en place de l'appel systeme est similaire à \textit{PutChar()}. Il faut
+simplement spécifier la taille du buffer de copie.
+
+\textit{code/userprog/exception.cc}
+\begin{lstlisting}
+        case SC_PutString: {
+          DEBUG('a', "PutString, initiated by user program.\n");
+          // Le premier argument (registre R4) c'est l'adresse de la chaine de
+caractere
+          // Que l'ont recopie dans le monde linux (noyau)
+          // R4 >> pointeur vers la mémoire  MIPS
+          // MAX_STRING_SIZE est defni prealablement dans code/threads/system.h
+          char *buffer = ReadStringFromMachine(machine->ReadRegister(4),
+MAX_STRING_SIZE);
+          synchconsole->SynchPutString(buffer);
+          delete [] buffer;
+          break;
+        }
+\end{lstlisting}
+
+
+Dans la SynchConsole on implemente \textit{SynchConsole::SynchPutString} :
+
+\textit{code/userprog/synchonsole.cc}
+\begin{lstlisting}
+void SynchConsole::SynchPutString(const char string[]) {
+    /* On utilise un mutex pour que les appels SynchPutString soient atomiques
+     * C'est à dire que deux appels à SynchPutString() affichent correctement
+     * les chaines de caractères...
+     * * */
+    mutex->P();
+    for(int i=0; i<MAX_STRING_SIZE-1;i++) {
+        if(string[i] == '\0')
+            break;
+        this->SynchPutChar(string[i]);
+    }
+    mutex->V();
+}
+\end{lstlisting}
+
+On utilise un mutex (Sémaphore initialisé à 1) pour assuré l'atomicité de
+PutString. En effet, on souhaite avoir tous les caractères dans le bon ordre,
+et deux appels a PutString doivent se faire l'un après l'autre.
+
+\subsection{GetChar GetString}
+
+Ces deux appels systèmes sont symétriques à PutChar et PutString. Dans le cas
+de GetChar, rien de plus simple, etant donné qu'il renvoi directement la
+valeur (C'est le registre 2 qui est utilisé pour les valeurs de retour). On
+ecrit directement dans le registre la valeur de retour de SynchGetChar().
+
+\textit{code/userprog/exception.cc}
+\begin{lstlisting}
+        case SC_GetChar: {
+          DEBUG('a', "GetChar, initiated by user program.\n");
+          machine->WriteRegister(2,(int) synchconsole->SynchGetChar());
+          break;
+        }
+\end{lstlisting}
+
+Pour GetString, on ecrit dans un buffer intermediaire, puis on copie ce buffer
+dans la mémoire user à l'adresse donnée a l'appel système.
+
+\begin{lstlisting}
+        case SC_GetString: {
+          DEBUG('a', "GetString, initiated by user program.\n");
+
+          // le premier argument est une adresse (char *)
+          int to = machine->ReadRegister(4);
+          // le second est un int >> la taille
+          int size = machine->ReadRegister(5);
+          // On donne pas acces à la mémoire directement, on ecrit ecrit dans un
+buffer
+          // Peut etre pas obligé, mais au cas ou on utilise un buffer..
+          char * buffer = new char[MAX_STRING_SIZE];
+          synchconsole->SynchGetString(buffer, size);
+          WriteStringToMachine(buffer, to, size);
+          delete [] buffer;
+          break;
+        }
+\end{lstlisting}
+
+
+\begin{lstlisting}
+void WriteStringToMachine(char * string, int to, unsigned max_size) {
+  /* On copie octet par octet, en faisant attention à bien convertir
+   * explicitement en char
+   */
+  char * bytes = (char *)(&machine->mainMemory[to]);
+  for(unsigned int i = 0; i < max_size-1; i++) {
+    bytes[i] = string[i];
+    if(string[i]=='\0')
+      break;
+  }
+}
+\end{lstlisting}
+
+\textit{code/userprog/synchonsole.cc}
+\begin{lstlisting}
+void SynchConsole::SynchGetString(char *buffer, int n) {
+  /* On utilise un mutex pour que tous les appels SynchGetString soient
+   * atomiques.
+   * * */
+  int i;
+  char c;
+  mutex->P();
+  for (i=0; i<n-1; i++) {
+    c = this->SynchGetChar();
+    // CTRL+D pour arrêter la saisie
+    if(c == EOF)
+      break;
+    else
+      buffer[i] = c;
+  }
+  buffer[i] = '\0';
+  mutex->V();
+}
+\end{lstlisting}
+
+\subsection{PutInt et GetInt}
+
+Pour PutInt et GetInt on va utiliser les fonction \textbf{sscanf} et
+\textbf{snprintf}. Pour facilier la saisie, on ajoute la fonction
+\textit{SynchConsole::SynchGetString(char *buffer, int n, char delim)} qui
+permet de lire un chaine de caractere et de s'arreter des qu'on rencontre un
+délimiteur (delim). Dans notre cas, on va utiliser '\textbackslash{n}'
+comme délémiteur lors de la saisie de nombre entier :
+
+\textit{code/userprog/synchonsole.cc}
+\begin{lstlisting}
+void SynchConsole::SynchPutInt(int value) {
+  char * buffer = new char[MAX_STRING_SIZE];
+  // on ecrit dans le buffer la valeur avec sprintf
+  snprintf(buffer,MAX_STRING_SIZE, "%d", value);
+  this->SynchPutString(buffer);
+  delete [] buffer;
+}
+
+int SynchConsole::SynchGetInt() {
+  int value;
+  char * buffer = new char[MAX_STRING_SIZE];
+  this->SynchGetString(buffer, MAX_STRING_SIZE, '\n');
+  sscanf(buffer, "%d", &value);
+  delete [] buffer;
+  return value;
+}
+\end{lstlisting}
+
+\textit{code/userprog/exception.cc}
+\begin{lstlisting}
+        case SC_PutInt: {
+          DEBUG('a', "PutInt, initiated by user program.\n");
+          // le premier est la valeur int
+          int value = machine->ReadRegister(4);
+          synchconsole->SynchPutInt(value);
+          break;
+        }
+
+        case SC_GetInt: {
+          DEBUG('a', "GetInt, initiated by user program.\n");
+          int value = synchconsole->SynchGetInt();
+          machine->WriteRegister(2, value);
+          break;
+        }
+\end{lstlisting}
+
+\section{Détection de fin de fichier}
+
+flemme...
+
+\section{Test Nachos étape 2}
+
+Voici le programme de test :
+
+\begin{lstlisting}
+#include "syscall.h"
+
+int main() {
+  PutString("Veuillez saisir un nombre : \n");
+  int nombre = GetInt();
+  PutString("Nombre +10 = ");PutInt(nombre+10);PutChar('\n');
+  PutString("Veuillez saisir une lettre : \n");
+  char c = GetChar();
+  PutString("Voici la lettre : ");
+  PutChar(c);
+  PutString("\nVeuillez saisir une phrase (max = 100) : ");
+  char buffer[100];
+  GetString(buffer,100);
+  PutString("\nVoici la phrase : ");
+  PutString(buffer);
+  PutChar('\n');
+  return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+$ ./build-origin/nachos-userprog -x ./build/etape2
+Veuillez saisir un nombre :
+5
+Nombre +10 = 15
+Veuillez saisir une lettre :
+g
+Voici la lettre : g
+Veuillez saisir une phrase (max = 100) : le mot de la fin
+
+Voici la phrase :
+le mot de la fin
+
+Machine halting!
+
+Ticks: total 1136142117, idle 1136139819, system 2170, user 128
+Disk I/O: reads 0, writes 0
+Console I/O: reads 22, writes 174
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...
+\end{lstlisting}
+
+
+\end{document}
+

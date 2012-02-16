@@ -141,8 +141,9 @@ void PutString(char *s);
 char GetChar();
 void GetString(char *buffer, int size);
 void PutInt(int value);
-void GetInt(int * address);
+int GetInt();
 
 #endif // IN_USER_MODE
 
 #endif /* SYSCALL_H */
+

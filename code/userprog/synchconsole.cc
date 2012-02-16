@@ -87,14 +87,17 @@ void SynchConsole::SynchGetString(char *buffer, int n) {
 void SynchConsole::SynchPutInt(int value) {
   char * buffer = new char[MAX_STRING_SIZE];
   // on ecrit dans le buffer la valeur avec sprintf
-  sprintf(buffer, "%d", value);
+  snprintf(buffer,MAX_STRING_SIZE, "%d", value);
   this->SynchPutString(buffer);
   delete [] buffer;
 }
 
-void SynchConsole::SynchGetInt(int * address) {
+int SynchConsole::SynchGetInt() {
+  int value;
   char * buffer = new char[MAX_STRING_SIZE];
   this->SynchGetString(buffer, MAX_STRING_SIZE, '\n');
-  sscanf(buffer, "%d", address);
+  sscanf(buffer, "%d", &value);
   delete [] buffer;
+  return value;
 }
+

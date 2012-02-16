@@ -118,8 +118,9 @@ ExceptionHandler (ExceptionType which)
         case SC_PutString: {
           DEBUG('a', "PutString, initiated by user program.\n");
           // Le premier argument (registre R4) c'est l'adresse de la chaine de caractere
-          // Que l'ont recopie dans le monde linux
+          // Que l'ont recopie dans le monde linux (noyau)
           // R4 >> pointeur vers la mémoire  MIPS
+          // MAX_STRING_SIZE est defni prealablement dans code/threads/system.h
           char *buffer = ReadStringFromMachine(machine->ReadRegister(4), MAX_STRING_SIZE);
           synchconsole->SynchPutString(buffer);
           delete [] buffer;
@@ -150,7 +151,6 @@ ExceptionHandler (ExceptionType which)
 
         case SC_PutInt: {
           DEBUG('a', "PutInt, initiated by user program.\n");
-
           // le premier est la valeur int
           int value = machine->ReadRegister(4);
           synchconsole->SynchPutInt(value);
@@ -159,10 +159,14 @@ ExceptionHandler (ExceptionType which)
 
         case SC_GetInt: {
           DEBUG('a', "GetInt, initiated by user program.\n");
-          int value;
-          synchconsole->SynchGetInt(&value);
-          int * mem_value = (int *)(&machine->mainMemory[machine->ReadRegister(4)]);
-          *mem_value = value;
+          int value = synchconsole->SynchGetInt();
+          machine->WriteRegister(2, value);
+          break;
+        }
+
+        case SC_Exit: {
+          DEBUG('a', "Exit, initiated by user program.\n");
+          interrupt->Halt();
           break;
         }
 
@@ -179,3 +183,4 @@ ExceptionHandler (ExceptionType which)
     UpdatePC ();
     // End of addition
 }
+
