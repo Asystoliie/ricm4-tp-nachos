@@ -100,4 +100,3 @@ int SynchConsole::SynchGetInt() {
   delete [] buffer;
   return value;
 }
-
