@@ -35,6 +35,8 @@
 #define SC_GetString	14
 #define SC_PutInt	15
 #define SC_GetInt	16
+#define SC_UserThreadCreate 17
+
 
 #ifdef IN_USER_MODE
 
@@ -134,7 +136,7 @@ void Fork (void (*func) ());
  */
 void Yield ();
 
-//Fonctions d'affichage
+// Entrée/Sortie : etape 2
 
 void PutChar(char c);
 void PutString(char *s);
@@ -142,6 +144,12 @@ char GetChar();
 void GetString(char *buffer, int size);
 void PutInt(int value);
 int GetInt();
+
+// Threads : etape 3
+
+int UserThreadCreate(void f(void *arg), void *arg);
+
+
 
 #endif // IN_USER_MODE
 

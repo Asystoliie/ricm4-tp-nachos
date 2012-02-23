@@ -1,0 +1,180 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\usepackage{subfigure}
+\usepackage{multicol}
+\usepackage[usenames,dvipsnames]{color}
+\definecolor{darkgray}{rgb}{0.95,0.95,0.95}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{textcomp}
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+\lstset{
+    backgroundcolor=\color{lbcolor},
+    tabsize=4,
+    rulecolor=,
+    language=C++,
+    basicstyle=\scriptsize,
+    upquote=true,
+    aboveskip={1.5\baselineskip},
+    columns=fixed,
+    showstringspaces=false,
+    extendedchars=true,
+    breaklines=true,
+    prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+    frame=single,
+    showtabs=false,
+    showspaces=false,
+    showstringspaces=false,
+    identifierstyle=\ttfamily,
+    keywordstyle=\color[rgb]{0,0,1},
+    commentstyle=\color[rgb]{0.133,0.545,0.133},
+    stringstyle=\color[rgb]{0.627,0.126,0.941},
+}
+\lstset{language=C++}
+\lstset{backgroundcolor=\color{darkgray}}
+
+\usepackage[left=1.0cm, right=1.0cm, top=2cm, bottom=4cm]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage{lastpage}
+\renewcommand\headrulewidth{1pt}
+\fancyhead[L]{\textsc{Nachos Étape 3 : Multithreading}}
+\fancyhead[R]{\textsc{Polytech' Grenoble}}
+\renewcommand\footrulewidth{1pt}
+\fancyfoot[R]{ \textsc{RICM 4}}
+
+\begin{document}
+\begin{titlepage}
+
+\begin{center}
+
+
+% Upper part of the page
+\includegraphics[width=0.25\textwidth]{./images/logo}\\[1cm]
+
+\textsc{\LARGE Polytech' Grenoble}\\[1.5cm]
+
+\textsc{\Large RICM 4\`eme ann\'ee}\\[1.2cm]
+
+
+% Title
+\HRule \\[0.4cm]
+{ \huge \bfseries NachOS\\[0.6cm]
+Etape 3: Multithreading}
+\\[0.4cm]
+
+\HRule \\[2cm]
+
+% Author and supervisor
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+\emph{\'Etudiants:}\\
+Elizabeth \textsc{Paz} \\
+Salem \textsc{Harrache}
+\end{flushleft}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{flushright} \large
+\emph{Professeur:} \\
+Vania \textsc{Marangozova}
+\end{flushright}
+\end{minipage}
+
+\vfill
+
+% Bottom of the page
+{\large  février 2012}
+
+\end{center}
+
+\end{titlepage}
+
+\section{Mise en place des threads \textit{utilisateurs}}
+
+Avant de nous interesser au Multithreading, nous allons tous d'abord nous
+interesser au fonctionnement des threads sous NachOS.
+
+\subsection{Fonctionnement des threads sous NachOS}
+
+Un thread NachOS comporte une structure de données (ContextBlock) contenant :
+status : JUST_CREATED, RUNNING, READY, BLOCKED
+stack : L'emplacement (bas) de la pile
+stackTop : Sommet de la pile
+machineState : Le contenu de l'ensemble de registres
+userRegisters : Le contenu de chaque registre (Thread user)
+space : L'espace d'adressage (Thread user)
+
+Un thread est tout d'abord créé avec la méthode Thread(). Elle initialise la
+pile et affecte JUST_CREATED à l'attribut status. Cet état temporaire indique
+que le thread est créé mais n'est pas encore prêt (READY) à utiliser le
+processeur. C'est l'appel Fork (différent du Fork Posix) qui va rendre ce
+thread exécutable. Concrètement, Fork prend en argument un pointeur vers la
+fonction à exécuter ainsi que son argument. Puis, elle initialise l'ensemble du
+context block 
+
+[...je comprends pas trop ici]
+
+La fonction \textit{saveUserState} : Sert à sauvegarder le contexte d'exécution
+du programme lors d'une commutation. Les informations telles que l'état des
+registres ou encore le pointeur de pile sont sauvegardées dans le contextBlock.
+Ce contexte sera restauré lorsque le Thread est élu avec la méthode
+\textit{restoreUserState}.
+
+\subsection{Description de l'instalation d'un programme utilisateur dans
+l'environnement NachOS}
+
+Le lancement pas à pas permet de mettre en evidence plusieurs étapes lors du
+lancement d'un programme dans l'environnement Nachos.
+
+\begin{lstlisting}
+Initializing address space, num pages 12, size 1536
+Initializing code segment, at 0x0, size 384
+Initializing data segment, at 0x180, size 32
+Initializing stack register to 1520
+Starting thread "main" at time 10
+\end{lstlisting}
+
+\subsubsection{Création de l'espace d'adressage}
+
+La premiere étape est la construction de l'espace d'adressage dans
+\textit{::AddrSpace}. Le fichier exécutable est stocké dans un objet Noff. Ce
+dernier contient le text, les données et les variables non initialisées. La
+taille total de l'espace d'adressage est la somme de ces trois zones au quelle
+on ajoute la taille de pile utilisateur qui est de 4Ko (1024 * 4).
+
+\begin{lstlisting}
+#define UserStackSize		1024
+\end{lstlisting}
+
+Avant de stocker cet espace d'adressage il faut connaitre le nombre de pages
+necessaires. Le système calcule le nombre de pages puis les initialise pour
+avoir la correspondance entres adresses virtelles et adresses physiques. Une
+fois les pages correctement initialisées, on copie les differentes zones en
+mémoires et ferme le fichier exécutable.
+
+\subsubsection{Initialisation des registres}
+
+Dans \textit{::InitRegisters}
+\begin{lstlisting}
+    for (i = 0; i < NumTotalRegs; i++)
+      machine->WriteRegister (i, 0);
+    machine->WriteRegister (PCReg, 0);
+    machine->WriteRegister (NextPCReg, 4);
+    machine->WriteRegister (StackReg, numPages * PageSize - 16)
+\end{lstlisting}
+
+Comme on peut le voir, tous les registres so
+
+
+\section{Plusieurs threads par processus}
+
+
+\section{Terminaison automatique}
+
+
+\end{document}
