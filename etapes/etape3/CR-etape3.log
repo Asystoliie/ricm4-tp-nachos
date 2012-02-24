@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.1.24)  24 FEB 2012 14:33
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.2.20)  24 FEB 2012 14:36
 entering extended mode
  %&-line parsing enabled.
 **CR-etape3.tex
@@ -23,11 +23,12 @@ File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
 \belowcaptionskip=\skip42
 \bibindent=\dimen102
 )
-(/etc/texmf/tex/latex/inputenc.sty
+(/usr/share/texmf-texlive/tex/latex/base/inputenc.sty
 Package: inputenc 2008/03/30 v1.1d Input encoding file
 \inpenc@prehook=\toks14
 \inpenc@posthook=\toks15
- (/etc/texmf/tex/latex/utf8.def
+
+(/usr/share/texmf-texlive/tex/latex/base/utf8.def
 File: utf8.def 2008/04/05 v1.1m UTF-8 support for inputenc
 Now handling font encoding OML ...
 ... no UTF-8 mapping file for font encoding OML
@@ -333,7 +334,7 @@ File: pdftex.def 2010/03/12 v0.04p Graphics/color for pdfTeX
 \Gin@req@height=\dimen112
 \Gin@req@width=\dimen113
 )
-(/etc/texmf/tex/latex/subfigure.sty
+(/usr/share/texmf-texlive/tex/latex/subfigure/subfigure.sty
 Package: subfigure 2002/03/15 v2.1.5 subfigure package
 \subfigtopskip=\skip46
 \subfigcapskip=\skip47
@@ -345,6 +346,11 @@ Package: subfigure 2002/03/15 v2.1.5 subfigure package
 \c@lofdepth=\count101
 \c@subtable=\count102
 \c@lotdepth=\count103
+
+****************************************
+* Local config file subfigure.cfg used *
+****************************************
+(/usr/share/texmf-texlive/tex/latex/subfigure/subfigure.cfg)
 \subfig@top=\skip50
 \subfig@bottom=\skip51
 )
@@ -612,12 +618,9 @@ Package ifvtex Info: VTeX not detected.
 \f@ncyO@olf=\skip61
 \f@ncyO@orf=\skip62
 )
-(/etc/texmf/tex/latex/lastpage/lastpage.sty
-
-LaTeX Warning: You have requested release `2011/06/27' of LaTeX,
-               but only release `2009/09/24' is available.
-
-Package: lastpage 2011/09/01 v1.2k Refers to last page's name (HMM; JPG)
+(/usr/share/texmf-texlive/tex/latex/lastpage/lastpage.sty
+Package: lastpage 1994/06/25 v0.1b LaTeX2e package for refs to last page number
+ (JPG)
 ) (./CR-etape3.aux)
 \openout1 = `CR-etape3.aux'.
 
@@ -635,7 +638,8 @@ LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 51.
 LaTeX Font Info:    ... okay on input line 51.
 LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 51.
 LaTeX Font Info:    Try loading font information for TS1+cmr on input line 51.
- (/usr/share/texmf-texlive/tex/latex/base/ts1cmr.fd
+
+(/usr/share/texmf-texlive/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    ... okay on input line 51.
@@ -696,13 +700,6 @@ driver: pdftex
 
 (1in=72.27pt, 1cm=28.45pt)
 -----------------------
-Package lastpage Info: Please have a look at the pageslts package at
-(lastpage)             http://www.ctan.org/tex-archive/ 
-(lastpage)             macros/latex/contrib/pageslts/ 
-(lastpage)             or
-(lastpage)             http://www.ctan.org/tex-archive/ 
-(lastpage)             install/macros/latex/contrib/pageslts.tds.zip
-(lastpage)             ! on input line 51.
 <./images/logo.png, id=1, 144.54pt x 92.0238pt>
 File: ./images/logo.png Graphic file (type png)
  <use ./images/logo.png>
@@ -724,8 +721,9 @@ y)>]
                 $
 l.113 pile et affecte JUST_
                            CREATED à l'attribut status. Cet état temporair...
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
 
-? 
 
 LaTeX Warning: Command \` invalid in math mode on input line 113.
 
@@ -734,15 +732,19 @@ LaTeX Warning: Command \` invalid in math mode on input line 113.
                                                   #1 #2\egroup \spacefactor ...
 l.113 pile et affecte JUST_CREATED à
                                       l'attribut status. Cet état temporair...
+I'm changing \accent to \mathaccent here; wish me luck.
+(Accents are not the same in formulas as they are in text.)
 
-? 
 ! You can't use `\spacefactor' in math mode.
 \add@accent ...}\accent #1 #2\egroup \spacefactor 
                                                   \accent@spacefactor 
 l.113 pile et affecte JUST_CREATED à
                                       l'attribut status. Cet état temporair...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
 
-? 
 
 LaTeX Warning: Command \' invalid in math mode on input line 113.
 
@@ -751,13 +753,19 @@ LaTeX Warning: Command \' invalid in math mode on input line 113.
                                                   #1 #2\egroup \spacefactor ...
 l.113 ...JUST_CREATED à l'attribut status. Cet é
                                                   tat temporaire indique
-? 
+I'm changing \accent to \mathaccent here; wish me luck.
+(Accents are not the same in formulas as they are in text.)
+
 ! You can't use `\spacefactor' in math mode.
 \add@accent ...}\accent #1 #2\egroup \spacefactor 
                                                   \accent@spacefactor 
 l.113 ...JUST_CREATED à l'attribut status. Cet é
                                                   tat temporaire indique
-? 
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
 
 LaTeX Warning: Command \' invalid in math mode on input line 114.
 
@@ -766,15 +774,19 @@ LaTeX Warning: Command \' invalid in math mode on input line 114.
                                                   #1 #2\egroup \spacefactor ...
 l.114 que le thread est cré
                             é mais n'est pas encore prêt (READY) à utilis...
+I'm changing \accent to \mathaccent here; wish me luck.
+(Accents are not the same in formulas as they are in text.)
 
-? 
 ! You can't use `\spacefactor' in math mode.
 \add@accent ...}\accent #1 #2\egroup \spacefactor 
                                                   \accent@spacefactor 
 l.114 que le thread est cré
                             é mais n'est pas encore prêt (READY) à utilis...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
 
-? 
 
 LaTeX Warning: Command \' invalid in math mode on input line 114.
 
@@ -783,15 +795,19 @@ LaTeX Warning: Command \' invalid in math mode on input line 114.
                                                   #1 #2\egroup \spacefactor ...
 l.114 que le thread est créé
                                mais n'est pas encore prêt (READY) à utilis...
+I'm changing \accent to \mathaccent here; wish me luck.
+(Accents are not the same in formulas as they are in text.)
 
-? 
 ! You can't use `\spacefactor' in math mode.
 \add@accent ...}\accent #1 #2\egroup \spacefactor 
                                                   \accent@spacefactor 
 l.114 que le thread est créé
                                mais n'est pas encore prêt (READY) à utilis...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
 
-? 
 
 LaTeX Warning: Command \^ invalid in math mode on input line 114.
 
@@ -800,13 +816,19 @@ LaTeX Warning: Command \^ invalid in math mode on input line 114.
                                                   #1 #2\egroup \spacefactor ...
 l.114 ...ead est créé mais n'est pas encore prê
                                                   t (READY) à utiliser le
-? 
+I'm changing \accent to \mathaccent here; wish me luck.
+(Accents are not the same in formulas as they are in text.)
+
 ! You can't use `\spacefactor' in math mode.
 \add@accent ...}\accent #1 #2\egroup \spacefactor 
                                                   \accent@spacefactor 
 l.114 ...ead est créé mais n'est pas encore prê
                                                   t (READY) à utiliser le
-? 
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
 
 LaTeX Warning: Command \` invalid in math mode on input line 114.
 
@@ -815,13 +837,19 @@ LaTeX Warning: Command \` invalid in math mode on input line 114.
                                                   #1 #2\egroup \spacefactor ...
 l.114 ...é mais n'est pas encore prêt (READY) à
                                                    utiliser le
-? 
+I'm changing \accent to \mathaccent here; wish me luck.
+(Accents are not the same in formulas as they are in text.)
+
 ! You can't use `\spacefactor' in math mode.
 \add@accent ...}\accent #1 #2\egroup \spacefactor 
                                                   \accent@spacefactor 
 l.114 ...é mais n'est pas encore prêt (READY) à
                                                    utiliser le
-? 
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
 
 LaTeX Warning: Command \' invalid in math mode on input line 115.
 
@@ -830,15 +858,19 @@ LaTeX Warning: Command \' invalid in math mode on input line 115.
                                                   #1 #2\egroup \spacefactor ...
 l.115 processeur. C'est l'appel Fork (diffé
                                             rent du Fork Posix) qui va rendr...
+I'm changing \accent to \mathaccent here; wish me luck.
+(Accents are not the same in formulas as they are in text.)
 
-? 
 ! You can't use `\spacefactor' in math mode.
 \add@accent ...}\accent #1 #2\egroup \spacefactor 
                                                   \accent@spacefactor 
 l.115 processeur. C'est l'appel Fork (diffé
                                             rent du Fork Posix) qui va rendr...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
 
-? 
 
 LaTeX Warning: Command \' invalid in math mode on input line 116.
 
@@ -847,15 +879,19 @@ LaTeX Warning: Command \' invalid in math mode on input line 116.
                                                   #1 #2\egroup \spacefactor ...
 l.116 thread exé
                  cutable. Concrètement, Fork prend en argument un pointeur ...
+I'm changing \accent to \mathaccent here; wish me luck.
+(Accents are not the same in formulas as they are in text.)
 
-? 
 ! You can't use `\spacefactor' in math mode.
 \add@accent ...}\accent #1 #2\egroup \spacefactor 
                                                   \accent@spacefactor 
 l.116 thread exé
                  cutable. Concrètement, Fork prend en argument un pointeur ...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
 
-? 
 
 LaTeX Warning: Command \` invalid in math mode on input line 116.
 
@@ -864,15 +900,19 @@ LaTeX Warning: Command \` invalid in math mode on input line 116.
                                                   #1 #2\egroup \spacefactor ...
 l.116 thread exécutable. Concrè
                                  tement, Fork prend en argument un pointeur ...
+I'm changing \accent to \mathaccent here; wish me luck.
+(Accents are not the same in formulas as they are in text.)
 
-? 
 ! You can't use `\spacefactor' in math mode.
 \add@accent ...}\accent #1 #2\egroup \spacefactor 
                                                   \accent@spacefactor 
 l.116 thread exécutable. Concrè
                                  tement, Fork prend en argument un pointeur ...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
 
-? 
 
 LaTeX Warning: Command \` invalid in math mode on input line 117.
 
@@ -881,15 +921,19 @@ LaTeX Warning: Command \` invalid in math mode on input line 117.
                                                   #1 #2\egroup \spacefactor ...
 l.117 fonction à
                   exécuter ainsi que son argument. Puis, elle initialise l'...
+I'm changing \accent to \mathaccent here; wish me luck.
+(Accents are not the same in formulas as they are in text.)
 
-? 
 ! You can't use `\spacefactor' in math mode.
 \add@accent ...}\accent #1 #2\egroup \spacefactor 
                                                   \accent@spacefactor 
 l.117 fonction à
                   exécuter ainsi que son argument. Puis, elle initialise l'...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
 
-? 
 
 LaTeX Warning: Command \' invalid in math mode on input line 117.
 
@@ -898,21 +942,27 @@ LaTeX Warning: Command \' invalid in math mode on input line 117.
                                                   #1 #2\egroup \spacefactor ...
 l.117 fonction à exé
                       cuter ainsi que son argument. Puis, elle initialise l'...
+I'm changing \accent to \mathaccent here; wish me luck.
+(Accents are not the same in formulas as they are in text.)
 
-? 
 ! You can't use `\spacefactor' in math mode.
 \add@accent ...}\accent #1 #2\egroup \spacefactor 
                                                   \accent@spacefactor 
 l.117 fonction à exé
                       cuter ainsi que son argument. Puis, elle initialise l'...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
 
-? 
 ! Missing $ inserted.
 <inserted text> 
                 $
 l.119 
       
-? 
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
 Missing character: There is no � in font cmex10!
 Missing character: There is no � in font cmex10!
 Missing character: There is no � in font cmex10!
@@ -950,7 +1000,6 @@ File: omlcmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <7> not available
 (Font)              Font shape `OML/cmm/m/it' tried instead on input line 164.
 
-
 AED: lastpage setting LastPage
 
 Package Fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -960,26 +1009,26 @@ Package Fancyhdr Warning: \headheight is too small (12.0pt):
 
 [1] [2] (./CR-etape3.aux) ) 
 Here is how much of TeX's memory you used:
- 5392 strings out of 495061
- 69267 string characters out of 1182621
- 199633 words of memory out of 3000000
- 8496 multiletter control sequences out of 15000+50000
+ 5373 strings out of 495061
+ 69255 string characters out of 1182621
+ 199649 words of memory out of 3000000
+ 8475 multiletter control sequences out of 15000+50000
  10226 words of font info for 38 fonts, out of 3000000 for 9000
  28 hyphenation exceptions out of 8191
  33i,12n,58p,231b,1284s stack positions out of 5000i,500n,10000p,200000b,50000s
- </home/liz/.texmf-var/fonts/pk/ljfour/jknappen/ec/t
-crm0700.600pk></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx10.p
-fb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/sh
-are/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></usr/share/texmf
--texlive/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-texlive/f
-onts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-texlive/fonts/type1/
-public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfo
-nts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr12
-.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/sh
-are/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texmf-te
-xlive/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texmf-texlive/fonts
-/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texmf-texlive/fonts/type1/publ
-ic/amsfonts/cm/cmtt8.pfb>
+ </home/salem/.texmf-var/fonts/pk/ljfour/jknappen/ec
+/tcrm0700.600pk></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx10
+.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/
+share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></usr/share/tex
+mf-texlive/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texmf-texlive
+/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-texlive/fonts/type
+1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-texlive/fonts/type1/public/ams
+fonts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr
+12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/
+share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texmf-
+texlive/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texmf-texlive/fon
+ts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texmf-texlive/fonts/type1/pu
+blic/amsfonts/cm/cmtt8.pfb>
 Output written on CR-etape3.pdf (3 pages, 216422 bytes).
 PDF statistics:
  70 PDF objects out of 1000 (max. 8388607)

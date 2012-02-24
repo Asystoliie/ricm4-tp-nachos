@@ -159,6 +159,13 @@ ExceptionHandler (ExceptionType which)
           break;
         }
 
+        case SC_GetInt: {
+          DEBUG('a', "GetInt, initiated by user program.\n");
+          int value = synchconsole->SynchGetInt();
+          machine->WriteRegister(2, value);
+          break;
+        }
+
         case SC_UserThreadCreate:
         {
           DEBUG('a', "UserThreadCreate, initiated by user program.\n");
@@ -170,10 +177,10 @@ ExceptionHandler (ExceptionType which)
           break;
         }
 
-        case SC_GetInt: {
-          DEBUG('a', "GetInt, initiated by user program.\n");
-          int value = synchconsole->SynchGetInt();
-          machine->WriteRegister(2, value);
+        case SC_UserThreadExit:
+        {
+          DEBUG('a', "UserThreadExit, initiated by user program.\n");
+          do_UserThreadExit();
           break;
         }
 

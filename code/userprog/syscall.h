@@ -36,7 +36,7 @@
 #define SC_PutInt	15
 #define SC_GetInt	16
 #define SC_UserThreadCreate 17
-
+#define SC_UserThreadExit 18
 
 #ifdef IN_USER_MODE
 
@@ -148,7 +148,7 @@ int GetInt();
 // Threads : etape 3
 
 int UserThreadCreate(void f(void *arg), void *arg);
-
+void UserThreadExit();
 
 
 #endif // IN_USER_MODE
