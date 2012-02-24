@@ -25,6 +25,7 @@
 #include "system.h"
 #include "syscall.h"
 #include "synchconsole.h"
+#include "userthread.h"
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -95,19 +96,6 @@ void WriteStringToMachine(char * string, int to, unsigned max_size) {
   }
 }
 
-typedef struct
-{
-    int f;
-    int arg;
-} UserThreadParameters;
-
-static void StartUserThread(int parameters){
-    UserThreadParameters *p = (UserThreadParameters *) parameters;
-    currentThread->space->InitRegisters(p->f, p->arg);
-    machine->Run();
-}
-
-
 void
 ExceptionHandler (ExceptionType which)
 {
@@ -153,7 +141,8 @@ ExceptionHandler (ExceptionType which)
           int to = machine->ReadRegister(4);
           // le second est un int >> la taille
           int size = machine->ReadRegister(5);
-          // On donne pas acces à la mémoire directement, on ecrit ecrit dans un buffer
+          // On donne pas acceder à la mémoire directement,on ecrit ecrit dans
+          // un buffer..
           // Peut etre pas obligé, mais au cas ou on utilise un buffer..
           char * buffer = new char[MAX_STRING_SIZE];
           synchconsole->SynchGetString(buffer, size);
@@ -176,17 +165,7 @@ ExceptionHandler (ExceptionType which)
 
           int f = machine->ReadRegister(4);
           int arg = machine->ReadRegister(5);
-          Thread * newThread = new Thread("Fonction f");
-
-          UserThreadParameters *parameters = new UserThreadParameters;
-          parameters->f = f;
-          parameters->arg = arg;
-
-          newThread->Fork(StartUserThread, (int) parameters);
-          int ret = 0;
-          if (newThread != NULL)
-            ret = -1;
-
+          int ret = do_UserThreadCreate(f,arg);
           machine->WriteRegister(2,ret);
           break;
         }
