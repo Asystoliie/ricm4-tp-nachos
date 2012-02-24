@@ -182,13 +182,13 @@ AddrSpace::InitRegisters (int f, int arg)
 
     // Need to also tell MIPS where next instruction is, because
     // of branch delay possibility
-    machine->WriteRegister (NextPCReg, 4+f);
+    machine->WriteRegister (NextPCReg, f+4);
 
     machine->WriteRegister (4, arg);
     // Set the stack register to the end of the address space, where we
     // allocated the stack; but subtract off a bit, to make sure we don't
     // accidentally reference off the end!
-    machine->WriteRegister (StackReg, numPages * PageSize - 16 - PageSize);
+    machine->WriteRegister (StackReg, numPages * PageSize - 16);
 
    // DEBUG ('a', "Initializing stack register to %d\n",h
 	//   numPages * PageSize - 16);

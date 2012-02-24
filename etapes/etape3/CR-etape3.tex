@@ -34,9 +34,8 @@
     keywordstyle=\color[rgb]{0,0,1},
     commentstyle=\color[rgb]{0.133,0.545,0.133},
     stringstyle=\color[rgb]{0.627,0.126,0.941},
+    backgroundcolor=\color{darkgray},
 }
-\lstset{language=C++}
-\lstset{backgroundcolor=\color{darkgray}}
 
 \usepackage[left=1.0cm, right=1.0cm, top=2cm, bottom=4cm]{geometry}
 \usepackage{fancyhdr}
@@ -113,17 +112,18 @@ Un thread NachOS comporte une structure de données (ContextBlock) contenant :
  \textbf{space}& L'espace d'adressage (Thread user) \\ \hline
 \end{tabular} \\
 \vspace{0.2cm} \\
-Un thread est tout d'abord créé avec la méthode Thread(). Elle initialise la
-pile et affecte JUST\_CREATED à l'attribut status. Cet état temporaire indique
-que le thread est créé mais n'est pas encore prêt (READY) à utiliser le
-processeur. C'est l'appel Fork (différent du Fork Posix) qui va rendre ce
-thread exécutable. Concrètement, Fork prend en argument un pointeur vers la
-fonction à exécuter ainsi que son argument. Puis, elle initialise l'ensemble du
-context block 
 
-[...je comprends pas trop ici]
+Un thread est tout d'abord créé avec la méthode Thread() dans le fichier 
+\textit{threads/thread.cc}. Cette méthode initialise la pile, le pointeur de la 
+pile et le thread est en état: \textit{JUST\_CREATED}. Cet état temporaire indique
+que le thread est créé mais n'est pas encore prêt (READY) à être executé. 
 
-La fonction \textit{saveUserState} : Sert à sauvegarder le contexte d'exécution
+L'appel Fork (différent du Fork Posix) qui va rendre ce
+thread exécutable. Concrètement, la pile de notre thread sera alloué et 
+initialisé dans cette fonction. Il va être ensuite mise dans l'ordannanceur de NachOS
+pour qu'il puisse être executé. La pile d'un thread NachOS
+
+La fonction \textit{saveUserState} : sert à sauvegarder le contexte d'exécution
 du programme lors d'une commutation. Les informations telles que l'état des
 registres ou encore le pointeur de pile sont sauvegardées dans le contextBlock.
 Ce contexte sera restauré lorsque le Thread est élu avec la méthode
@@ -163,13 +163,13 @@ mémoires et ferme le fichier exécutable.
 
 \subsubsection{Initialisation des registres}
 
-Dans \textit{::InitRegisters}
+Dans \textit{::InitRegisters} 
 \begin{lstlisting}
-    for (i = 0; i < NumTotalRegs; i++)
-      machine->WriteRegister (i, 0);
-    machine->WriteRegister (PCReg, 0);
-    machine->WriteRegister (NextPCReg, 4);
-    machine->WriteRegister (StackReg, numPages * PageSize - 16)
+for (i = 0; i < NumTotalRegs; i++)
+   machine->WriteRegister (i, 0);
+machine->WriteRegister (PCReg, 0);
+machine->WriteRegister (NextPCReg, 4);
+machine->WriteRegister (StackReg, numPages * PageSize - 16)
 \end{lstlisting}
 
 Comme on peut le voir, tous les registres sont mis à zéro. Trois
