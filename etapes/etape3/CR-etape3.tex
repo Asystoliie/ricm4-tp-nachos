@@ -101,16 +101,20 @@ interesser au fonctionnement des threads sous NachOS.
 
 \subsection{Fonctionnement des threads sous NachOS}
 
-Un thread NachOS comporte une structure de données (ContextBlock) contenant :
-status : JUST\_CREATED, RUNNING, READY, BLOCKED
-stack : L'emplacement (bas) de la pile
-stackTop : Sommet de la pile
-machineState : Le contenu de l'ensemble de registres
-userRegisters : Le contenu de chaque registre (Thread user)
-space : L'espace d'adressage (Thread user)
-
+Un thread NachOS comporte une structure de données (ContextBlock) contenant :  
+\vspace{0.3cm} \\
+\begin{tabular}{|l|l|}
+\hline 
+ \textbf{status} & JUST\_CREATED, RUNNING, READY, BLOCKED \\ \hline 
+ \textbf{stack}& L'emplacement (bas) de la pile \\ \hline
+ \textbf{stackTops}& Sommet de la pile \\ \hline
+ \textbf{machineState}&Le contenu de l'ensemble de registres \\ \hline
+ \textbf{userRegisters} &Le contenu de chaque registre (Thread user) \\ \hline
+ \textbf{space}& L'espace d'adressage (Thread user) \\ \hline
+\end{tabular} \\
+\vspace{0.2cm} \\
 Un thread est tout d'abord créé avec la méthode Thread(). Elle initialise la
-pile et affecte JUST_CREATED à l'attribut status. Cet état temporaire indique
+pile et affecte JUST\_CREATED à l'attribut status. Cet état temporaire indique
 que le thread est créé mais n'est pas encore prêt (READY) à utiliser le
 processeur. C'est l'appel Fork (différent du Fork Posix) qui va rendre ce
 thread exécutable. Concrètement, Fork prend en argument un pointeur vers la
