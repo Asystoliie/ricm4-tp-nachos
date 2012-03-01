@@ -1,8 +1,7 @@
 #include "userthread.h"
 
-
-void StartUserThread(int parameters){
-    UserThreadParameters *p = (UserThreadParameters *) parameters;
+void StartUserThread(int args){
+    UserThreadArgs *p = (UserThreadArgs *) args;
     currentThread->space->InitRegisters(p->f, p->arg);
     machine->Run();
     return;
@@ -11,24 +10,21 @@ void StartUserThread(int parameters){
 UserThread::UserThread(const char *debugName, int f, int arg) : Thread(debugName) {
     // On encapsule la fonction et les parametres dans notre structure parameters
     this->id = 0;
-    this->parameters = new UserThreadParameters;
-    parameters->f = f;
-    parameters->arg = arg;
-
+    this->args = new UserThreadArgs;
+    args->f = f;
+    args->arg = arg;
 }
 
 UserThread::~UserThread() {
-    delete parameters;
+    delete args;
 }
 
 void UserThread::StartThread(void) {
-    this->Fork(StartUserThread, (int) this->parameters);
+    this->Fork(StartUserThread, (int) this->args);
 }
 
 int do_UserThreadCreate(int f, int arg) {
-
-
-    UserThread* newThread = new UserThread("Test", f, arg);
+    UserThread* newThread = new UserThread((char*)f, f, arg);
     if (newThread == NULL) {
         printf("Failed to create new Thread : newThread is NULL\n");
         return -1;

@@ -124,7 +124,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
-//      Dealloate an address space.  Nothing for now!
+// Dealloate an address space.  Nothing for now!
 //----------------------------------------------------------------------
 
 AddrSpace::~AddrSpace ()
@@ -221,4 +221,3 @@ AddrSpace::RestoreState ()
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }
-

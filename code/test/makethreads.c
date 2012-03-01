@@ -13,9 +13,9 @@ void print(void * i) {
 int main() {
     PutString("Test de thread : \n");
     UserThreadCreate(print, (void *)20);
-    PutString("Fin\n");
     int i = 0;
     for(i=0;i<1000000;i++){}
     return 0;
+    PutString("Fin\n");
 }
 

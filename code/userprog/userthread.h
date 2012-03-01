@@ -8,12 +8,12 @@
 typedef struct {
     int f;
     int arg;
-} UserThreadParameters;
+} UserThreadArgs;
 
 class UserThread : public Thread {
     public:
         UserThread(const char *debugName, int f, int arg);
-        UserThreadParameters *parameters;
+        UserThreadArgs *args;
         void StartThread(void);
         ~UserThread();
         int getId () { return (id); }
