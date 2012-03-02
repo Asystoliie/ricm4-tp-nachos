@@ -97,6 +97,13 @@ AddrSpace::AddrSpace (OpenFile * executable)
     this->semAnyThreads = new Semaphore("semAnyThreads", 0);
 
 
+    // Initialisation du thread main
+    this->semStackBitMap->P();
+    // La zone 0 est pour le thread main
+    currentThread->setId(this->stackBitMap->Find());
+    this->semStackBitMap->V();
+
+
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
        numPages, size);
 // first, set up the translation

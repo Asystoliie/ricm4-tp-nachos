@@ -30,19 +30,21 @@ int do_UserThreadCreate(int f, int arg) {
         return -1;
     }
     currentThread->space->semStackBitMap->P();
-    int numPage = currentThread->space->stackBitMap->Find();
+    newThread->setId(currentThread->space->stackBitMap->Find());
     currentThread->space->semStackBitMap->V();
 
-    if (numPage < numPage) {
-        printf("Failed to create new Thread : numPage = %d\n", numPage);
+    if (newThread->getId() < 0) {
+        printf("Failed to create new Thread : numPage = %d\n", newThread->getId());
         return -1;
     }
-    newThread->setId(numPage);
     newThread->StartThread();
-    return (int) newThread;
+    return newThread->getId();
 }
 
 void do_UserThreadExit() {
+    currentThread->space->semStackBitMap->P();
+    currentThread->space->stackBitMap->Clear(currentThread->getId());
+    currentThread->space->semStackBitMap->V();
     currentThread->Finish();
 }
 
