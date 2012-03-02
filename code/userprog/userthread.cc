@@ -30,7 +30,7 @@ int do_UserThreadCreate(int f, int arg) {
         return -1;
     }
     currentThread->space->semStackBitMap->P();
-    int numPage = newThread->space->stackBitMap->Find();
+    int numPage = currentThread->space->stackBitMap->Find();
     currentThread->space->semStackBitMap->V();
 
     if (numPage < numPage) {
