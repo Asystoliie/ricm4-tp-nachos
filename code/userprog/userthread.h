@@ -16,9 +16,7 @@ class UserThread : public Thread {
         UserThreadArgs *args;
         void StartThread(void);
         ~UserThread();
-        int getId () { return (id); }
-    private:
-        int id;
+
 #ifdef USER_PROGRAM
 // ...
 #endif

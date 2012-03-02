@@ -2,14 +2,13 @@
 
 void StartUserThread(int args){
     UserThreadArgs *p = (UserThreadArgs *) args;
-    currentThread->space->InitRegisters(p->f, p->arg);
+    currentThread->space->InitThreadRegisters(p->f, p->arg, currentThread->getId());
     machine->Run();
     return;
 }
 
 UserThread::UserThread(const char *debugName, int f, int arg) : Thread(debugName) {
     // On encapsule la fonction et les parametres dans notre structure parameters
-    this->id = 0;
     this->args = new UserThreadArgs;
     args->f = f;
     args->arg = arg;
@@ -20,6 +19,7 @@ UserThread::~UserThread() {
 }
 
 void UserThread::StartThread(void) {
+    this->setId(0);
     this->Fork(StartUserThread, (int) this->args);
 }
 

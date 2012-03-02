@@ -8,9 +8,7 @@
 class SynchConsole {
     public:
         SynchConsole(char *readFile, char *writeFile);
-        // initialize the hardware console device
         ~SynchConsole();
-        // clean up console emulation
         void SynchPutChar(const char ch);
         char SynchGetChar();
         // Unix putchar(3S)

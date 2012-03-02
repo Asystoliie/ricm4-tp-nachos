@@ -6,7 +6,8 @@
 
 static Semaphore *readAvail;
 static Semaphore *writeDone;
-static Semaphore *mutex;
+static Semaphore *writeMutex;
+static Semaphore *readMutex;
 
 static void ReadAvail(int arg) {
     readAvail->V();
@@ -17,33 +18,39 @@ static void WriteDone(int arg) {
 }
 
 SynchConsole::SynchConsole(char *readFile, char *writeFile) {
-    readAvail = new Semaphore("read avail", 0);
-    writeDone = new Semaphore("write done", 0);
-    mutex = new Semaphore("mutex", 1);
-    console = new Console (readFile, writeFile, ReadAvail, WriteDone, 0);
+    readAvail  = new Semaphore("read avail", 0);
+    writeDone  = new Semaphore("write done", 0);
+    writeMutex = new Semaphore("writeMutex", 1);
+    readMutex  = new Semaphore("readMutex", 1);
+    console    = new Console (readFile, writeFile, ReadAvail, WriteDone, 0);
 }
 
 SynchConsole::~SynchConsole() {
     delete console;
     delete writeDone;
     delete readAvail;
-    delete mutex;
+    delete writeMutex;
+    delete readMutex;
 }
 
 void SynchConsole::SynchPutChar(const char ch) {
     /* On écrit un char on se bloque en attendant que la console appelle
      * (WriteDone>V())
      */
+    writeMutex->P();
     console->PutChar(ch);
     writeDone->P();
+    writeMutex->V();
 }
 
 char SynchConsole::SynchGetChar() {
     /* Lorsqu'il y a rien à lire, on se bloque, et dès qu'il y a quelques chose
      * à lire, on sait qu'on sera débloqué (ReadAvail->V())
      */
+    readMutex->P();
     readAvail->P();
     return console->GetChar();
+    readMutex->V();
 }
 
 void SynchConsole::SynchPutString(const char string[]) {
@@ -51,13 +58,11 @@ void SynchConsole::SynchPutString(const char string[]) {
      * C'est à dire que deux appels à SynchPutString() affichent correctement
      * les chaines de caractères...
      * * */
-    mutex->P();
     for(int i=0; i<MAX_STRING_SIZE-1;i++) {
         if(string[i] == '\0')
             break;
         this->SynchPutChar(string[i]);
     }
-    mutex->V();
 }
 
 void SynchConsole::SynchGetString(char *buffer, int n, char delim) {
@@ -66,7 +71,6 @@ void SynchConsole::SynchGetString(char *buffer, int n, char delim) {
    * * */
   int i;
   char c;
-  mutex->P();
   for (i=0; i<n-1; i++) {
     c = this->SynchGetChar();
     // CTRL+D pour arrêter la saisie
@@ -76,7 +80,6 @@ void SynchConsole::SynchGetString(char *buffer, int n, char delim) {
       buffer[i] = c;
   }
   buffer[i] = '\0';
-  mutex->V();
 }
 
 
