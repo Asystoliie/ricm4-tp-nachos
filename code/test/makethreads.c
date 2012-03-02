@@ -1,7 +1,6 @@
 //#include "system.h"
 #include "syscall.h"
 
-
 void print(void * i) {
     int j;
     for (j = 0; j < 20; j++){
