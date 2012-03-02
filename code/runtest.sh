@@ -3,7 +3,7 @@
 #step2
 #COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/etape2'
 #step3
-COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/makethreads'
+COMMAND='./build-origin/nachos-userprog -rs 2 -x ./build/makethreads'
 
 
 rm make_error.log 2> /dev/null

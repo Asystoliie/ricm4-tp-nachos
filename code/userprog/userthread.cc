@@ -4,6 +4,7 @@ void StartUserThread(int args){
     UserThreadArgs *p = (UserThreadArgs *) args;
     currentThread->space->InitThreadRegisters(p->f, p->arg, currentThread->getId());
     machine->Run();
+    currentThread->space->RestoreState();
     return;
 }
 

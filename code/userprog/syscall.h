@@ -147,7 +147,7 @@ int GetInt();
 
 // Threads : etape 3
 
-int UserThreadCreate(void f(void *arg), void *arg);
+int UserThreadCreate(void * f, void *arg);
 void UserThreadExit();
 
 
