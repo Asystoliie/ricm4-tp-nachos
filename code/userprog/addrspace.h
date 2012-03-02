@@ -16,11 +16,11 @@
 #include "copyright.h"
 #include "filesys.h"
 #include "bitmap.h"
+#include "synch.h"
 
 #define UserStackSize        1024// increase this as necessary! (4k)
 #define UserThreadNumPage    1
 
-class Semaphore;
 
 class AddrSpace
 {
@@ -37,7 +37,6 @@ class AddrSpace
         void InitRegisters ();
         // Initialize user-level CPU registers,
         // before jumping to user code
-
 
         void SaveState ();        // Save/restore address space-specific
         void RestoreState ();    // info on a context switch

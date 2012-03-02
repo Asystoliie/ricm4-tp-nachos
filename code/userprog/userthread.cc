@@ -29,8 +29,16 @@ int do_UserThreadCreate(int f, int arg) {
         printf("Failed to create new Thread : newThread is NULL\n");
         return -1;
     }
-    newThread->StartThread();
+    currentThread->space->semStackBitMap->P();
+    int numPage = newThread->space->stackBitMap->Find();
+    currentThread->space->semStackBitMap->V();
 
+    if (numPage < numPage) {
+        printf("Failed to create new Thread : numPage = %d\n", numPage);
+        return -1;
+    }
+    newThread->setId(numPage);
+    newThread->StartThread();
     return (int) newThread;
 }
 
