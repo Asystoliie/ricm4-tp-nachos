@@ -1,19 +1,35 @@
 #include "userthread.h"
 
+void StartUserThread(int args){
+    UserThreadArgs *p = (UserThreadArgs *) args;
+    currentThread->space->InitThreadRegisters(p->f, p->arg, currentThread->getId());
+    machine->Run();
+    return;
+}
 
-int do_UserThreadCreate(int f, int arg){
-
+UserThread::UserThread(const char *debugName, int f, int arg) : Thread(debugName) {
     // On encapsule la fonction et les parametres dans notre structure parameters
-    UserThreadParameters *parameters = new UserThreadParameters;
-    parameters->f = f;
-    parameters->arg = arg;
+    this->args = new UserThreadArgs;
+    args->f = f;
+    args->arg = arg;
+}
 
-    Thread* newThread = new Thread((char *)f);
-    if (newThread == NULL){
+UserThread::~UserThread() {
+    delete args;
+}
+
+void UserThread::StartThread(void) {
+    this->setId(0);
+    this->Fork(StartUserThread, (int) this->args);
+}
+
+int do_UserThreadCreate(int f, int arg) {
+    UserThread* newThread = new UserThread((char*)f, f, arg);
+    if (newThread == NULL) {
         printf("Failed to create new Thread : newThread is NULL\n");
         return -1;
     }
-    newThread->Fork(StartUserThread, (int)parameters);
+    newThread->StartThread();
 
     return (int) newThread;
 }
@@ -21,11 +37,3 @@ int do_UserThreadCreate(int f, int arg){
 void do_UserThreadExit() {
     currentThread->Finish();
 }
-
-void StartUserThread(int parameters){
-    UserThreadParameters *p = (UserThreadParameters *) parameters;
-    currentThread->space->InitRegisters(p->f, p->arg);
-    machine->Run();
-    return;
-}
-

@@ -19,6 +19,7 @@
 #include "system.h"
 #include "addrspace.h"
 #include "noff.h"
+#include "synch.h"
 
 #include <strings.h>        /* for bzero */
 
@@ -82,6 +83,21 @@ AddrSpace::AddrSpace (OpenFile * executable)
     // at least until we have
     // virtual memory
 
+
+    // Le nombre de thread en cours d'executions (à protéger par un mutex)
+    this->runningThreads = 0;
+    // l'objet bitmap qui permet de trouver les zones libres pour les
+    // nouveaux threads sans devoir gérer ça nous meme..
+    this->stackBitMap = new BitMap(numPages / UserThreadNumPage);
+    // Mutex pour manipuler la variable running_threads
+    this->semRunningThreads = new Semaphore("semRunningThreads", 1);
+    this->semStackBitMap = new Semaphore("semStackBitMap", 1);
+    this->semAnyThreads = new Semaphore("semAnyThreads", 0);
+    // Tableau de sémaphore pour les threads
+    for (i = 0; i < UserMaxNumThread; i++)
+        semThreads[i] = new Semaphore("semThread",1);
+
+
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
        numPages, size);
 // first, set up the translation
@@ -124,7 +140,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
-//      Dealloate an address space.  Nothing for now!
+// Dealloate an address space.  Nothing for now!
 //----------------------------------------------------------------------
 
 AddrSpace::~AddrSpace ()
@@ -170,28 +186,18 @@ AddrSpace::InitRegisters ()
 
 
 void
-AddrSpace::InitRegisters (int f, int arg)
+AddrSpace::InitThreadRegisters (int f, int arg, int threadId)
 {
-    int i;
-
-    for (i = 0; i < NumTotalRegs; i++)
-        machine->WriteRegister (i, 0);
-
-    // Initial program counter -- must be location of "f"
     machine->WriteRegister (PCReg, f);
-
-    // Need to also tell MIPS where next instruction is, because
-    // of branch delay possibility
     machine->WriteRegister (NextPCReg, f+4);
-
+    // On ajoute l'arguments
     machine->WriteRegister (4, arg);
-    // Set the stack register to the end of the address space, where we
-    // allocated the stack; but subtract off a bit, to make sure we don't
-    // accidentally reference off the end!
-    machine->WriteRegister (StackReg, numPages * PageSize - 16 - PageSize);
+    // On se place sur la pile du thread
+    int pageThreadAddress = UserThreadNumPage * PageSize  * threadId;
+    machine->WriteRegister (StackReg, numPages * PageSize - 16 - PageSize - pageThreadAddress);
 
-   // DEBUG ('a', "Initializing stack register to %d\n",h
-	//   numPages * PageSize - 16);
+    DEBUG ('a', "Initializing thread stack register to %d\n",
+       numPages * PageSize - 16 - pageThreadAddress);
 }
 
 //----------------------------------------------------------------------
@@ -221,4 +227,3 @@ AddrSpace::RestoreState ()
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }
-
