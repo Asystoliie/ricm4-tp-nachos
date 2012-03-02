@@ -17,8 +17,8 @@
 #include "filesys.h"
 #include "bitmap.h"
 
-#define UserStackSize        4092// increase this as necessary! (4k)
-#define UserThreadNumPage    3
+#define UserStackSize        1024// increase this as necessary! (4k)
+#define UserThreadNumPage    1
 #define UserMaxNumThread divRoundUp(UserStackSize, (UserThreadNumPage * PageSize))
 
 class Semaphore;
