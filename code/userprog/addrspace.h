@@ -19,7 +19,6 @@
 
 #define UserStackSize        1024// increase this as necessary! (4k)
 #define UserThreadNumPage    1
-#define UserMaxNumThread divRoundUp(UserStackSize, (UserThreadNumPage * PageSize))
 
 class Semaphore;
 
@@ -32,6 +31,8 @@ class AddrSpace
         // stored in the file "executable"
         ~AddrSpace ();
         // De-allocate an address space
+
+        int userMaxNumThread;
 
         void InitRegisters ();
         // Initialize user-level CPU registers,
@@ -55,8 +56,6 @@ class AddrSpace
         Semaphore *semStackBitMap;
         // Pour la terminaison du main
         Semaphore *semAnyThreads;
-        // Tableau de sémaphores pour les threads (pour les joins)
-        Semaphore *semThreads[UserMaxNumThread];
 
     private:
         TranslationEntry * pageTable;    // Assume linear page table translation
@@ -66,3 +65,4 @@ class AddrSpace
 };
 
 #endif // ADDRSPACE_H
+

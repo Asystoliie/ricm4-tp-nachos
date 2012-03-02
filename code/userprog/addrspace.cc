@@ -72,6 +72,9 @@ AddrSpace::AddrSpace (OpenFile * executable)
     SwapHeader (&noffH);
     ASSERT (noffH.noffMagic == NOFFMAGIC);
 
+    // nombre de threads max
+    userMaxNumThread = (int)(UserStackSize / (UserThreadNumPage * PageSize));
+
     // how big is address space?
     size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;    // we need to increase the size
     // to leave room for the stack
@@ -93,9 +96,6 @@ AddrSpace::AddrSpace (OpenFile * executable)
     this->semRunningThreads = new Semaphore("semRunningThreads", 1);
     this->semStackBitMap = new Semaphore("semStackBitMap", 1);
     this->semAnyThreads = new Semaphore("semAnyThreads", 0);
-    // Tableau de sémaphore pour les threads
-    for (i = 0; i < UserMaxNumThread; i++)
-        semThreads[i] = new Semaphore("semThread",1);
 
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
@@ -227,3 +227,4 @@ AddrSpace::RestoreState ()
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }
+
