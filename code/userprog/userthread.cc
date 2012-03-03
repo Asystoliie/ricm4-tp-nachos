@@ -1,27 +1,21 @@
 #include "userthread.h"
 
-void StartUserThread(int args){
-    UserThreadArgs *p = (UserThreadArgs *) args;
-    currentThread->space->InitThreadRegisters(p->f, p->arg, currentThread->getId());
+void StartUserThread(int thread) {
+    UserThread *t = (UserThread *) thread;
+    // L'id du thread informe egalement le numéro de page du thread
+    currentThread->space->InitThreadRegisters(t->func, t->arg, t->getId());
+    currentThread->space->UpdateRunningThreads(1); // appel atomique
     machine->Run();
-    currentThread->space->RestoreState();
-    return;
 }
 
-UserThread::UserThread(const char *debugName, int f, int arg) : Thread(debugName) {
-    // On encapsule la fonction et les parametres dans notre structure parameters
-    this->args = new UserThreadArgs;
-    args->f = f;
-    args->arg = arg;
+UserThread::UserThread(const char *debugName, int f, int a) : Thread(debugName) {
+    this->func = f;
+    this->arg = a;
 }
 
-UserThread::~UserThread() {
-    delete args;
-}
-
-void UserThread::StartThread(void) {
-    this->setId(0);
-    this->Fork(StartUserThread, (int) this->args);
+void UserThread::Fork () {
+    DEBUG ('t', "Forking userThread");
+    Thread::Fork (StartUserThread, (int) this);
 }
 
 int do_UserThreadCreate(int f, int arg) {
@@ -35,17 +29,22 @@ int do_UserThreadCreate(int f, int arg) {
     currentThread->space->semStackBitMap->V();
 
     if (newThread->getId() < 0) {
-        printf("Failed to create new Thread : numPage = %d\n", newThread->getId());
+        printf("Failed to create new Thread : numPage < 0");
         return -1;
     }
-    newThread->StartThread();
+
+    newThread->Fork();
     return newThread->getId();
 }
 
 void do_UserThreadExit() {
-    currentThread->space->semStackBitMap->P();
-    currentThread->space->stackBitMap->Clear(currentThread->getId());
-    currentThread->space->semStackBitMap->V();
+    currentThread->space->UpdateRunningThreads(-1); // appel atomique
+
+    // Je suis le main donc je vais attendre les autres
+    if (currentThread->getId() == 0) {
+        currentThread->space->semWaitThreads->P();
+        interrupt->Halt();
+    }
+    // Sinon je suis qu'un misérable userthread et ma vie se termine ici...
     currentThread->Finish();
 }
-

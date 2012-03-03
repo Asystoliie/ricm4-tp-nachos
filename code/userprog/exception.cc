@@ -105,9 +105,18 @@ ExceptionHandler (ExceptionType which)
         switch (type) {
 
         case SC_Halt: {
-          DEBUG('a', "Shutdown, initiated by user program.\n");
-          interrupt->Halt();
-          break;
+            DEBUG('a', "Shutdown, initiated by user program.\n");
+            interrupt->Halt();
+            break;
+        }
+
+        case SC_Exit: {
+            DEBUG('a', "Exit, initiated by user program.\n");
+            // Par defaut le thread main appel UserThreadExit et attend donc
+            // les threads utilisateurs; mais Un appel explicite de Exit
+            // n'attend aucun threads et quitte
+            interrupt->Halt();
+            break;
         }
 
         case SC_PutChar: {
@@ -180,13 +189,9 @@ ExceptionHandler (ExceptionType which)
         case SC_UserThreadExit:
         {
           DEBUG('a', "UserThreadExit, initiated by user program.\n");
+          // Laisse les autres threads s'executer et attends jusqu'a ce qu'il se
+          // termine tous
           do_UserThreadExit();
-          break;
-        }
-
-        case SC_Exit: {
-          DEBUG('a', "Exit, initiated by user program.\n");
-          interrupt->Halt();
           break;
         }
 
@@ -203,4 +208,3 @@ ExceptionHandler (ExceptionType which)
     UpdatePC ();
     // End of addition
 }
-

@@ -18,8 +18,8 @@
 #include "bitmap.h"
 #include "synch.h"
 
-#define UserStackSize        1024// increase this as necessary! (4k)
-#define UserThreadNumPage    1
+#define UserStackSize        4096// increase this as necessary! (4k)
+#define UserThreadNumPage    3
 
 
 class AddrSpace
@@ -50,11 +50,14 @@ class AddrSpace
         // l'objet bitmap qui permet de trouver les zones libres pour les
         // nouveaux threads sans devoir gérer ça nous meme..
         BitMap *stackBitMap;
-        // Mutex pour manipuler la variable running_threads
+        // Pour manipuler la variable runningThreads
         Semaphore *semRunningThreads;
+        // Pour manipuler la bitmap
         Semaphore *semStackBitMap;
-        // Pour la terminaison du main
-        Semaphore *semAnyThreads;
+        // Pour la terminaison du thread main
+        Semaphore *semWaitThreads;
+
+        void UpdateRunningThreads(int i);
 
     private:
         TranslationEntry * pageTable;    // Assume linear page table translation
@@ -64,4 +67,3 @@ class AddrSpace
 };
 
 #endif // ADDRSPACE_H
-

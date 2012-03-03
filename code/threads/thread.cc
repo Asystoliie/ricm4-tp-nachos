@@ -20,9 +20,10 @@
 #include "synch.h"
 #include "system.h"
 
-#define STACK_FENCEPOST 0xdeadbeef	// this is put at the top of the
-					// execution stack, for detecting
-					// stack overflows
+#define STACK_FENCEPOST 0xdeadbeef
+// this is put at the top of the
+// execution stack, for detecting
+// stack overflows
 
 //----------------------------------------------------------------------
 // Thread::Thread
@@ -61,7 +62,7 @@ Thread::~Thread ()
 
     ASSERT (this != currentThread);
     if (stack != NULL)
-	DeallocBoundedArray ((char *) stack, StackSize * sizeof (int));
+    DeallocBoundedArray ((char *) stack, StackSize * sizeof (int));
 }
 
 //----------------------------------------------------------------------
@@ -105,7 +106,7 @@ Thread::Fork (VoidFunctionPtr func, int arg)
 #endif // USER_PROGRAM
 
     IntStatus oldLevel = interrupt->SetLevel (IntOff);
-    scheduler->ReadyToRun (this);	// ReadyToRun assumes that interrupts
+    scheduler->ReadyToRun (this);    // ReadyToRun assumes that interrupts
     // are disabled!
     (void) interrupt->SetLevel (oldLevel);
 }
@@ -129,10 +130,10 @@ void
 Thread::CheckOverflow ()
 {
     if (stack != NULL)
-#ifdef HOST_SNAKE		// Stacks grow upward on the Snakes
-	ASSERT (stack[StackSize - 1] == STACK_FENCEPOST);
+#ifdef HOST_SNAKE        // Stacks grow upward on the Snakes
+    ASSERT (stack[StackSize - 1] == STACK_FENCEPOST);
 #else
-	ASSERT (*stack == (int) STACK_FENCEPOST);
+    ASSERT (*stack == (int) STACK_FENCEPOST);
 #endif
 }
 
@@ -166,7 +167,7 @@ Thread::Finish ()
     // End of addition
 
     threadToBeDestroyed = currentThread;
-    Sleep ();			// invokes SWITCH
+    Sleep ();            // invokes SWITCH
     // not reached
 }
 
@@ -199,11 +200,10 @@ Thread::Yield ()
     DEBUG ('t', "Yielding thread \"%s\"\n", getName ());
 
     nextThread = scheduler->FindNextToRun ();
-    if (nextThread != NULL)
-      {
-	  scheduler->ReadyToRun (this);
-	  scheduler->Run (nextThread);
-      }
+    if (nextThread != NULL) {
+        scheduler->ReadyToRun (this);
+        scheduler->Run (nextThread);
+    }
     (void) interrupt->SetLevel (oldLevel);
 }
 
@@ -238,9 +238,9 @@ Thread::Sleep ()
 
     status = BLOCKED;
     while ((nextThread = scheduler->FindNextToRun ()) == NULL)
-	interrupt->Idle ();	// no one to run, wait for an interrupt
+    interrupt->Idle ();    // no one to run, wait for an interrupt
 
-    scheduler->Run (nextThread);	// returns when we've been signalled
+    scheduler->Run (nextThread);    // returns when we've been signalled
 }
 
 //----------------------------------------------------------------------
@@ -294,10 +294,10 @@ SetupThreadState ()
   // running together.
 
   if (currentThread->space != NULL)
-    {				// if there is an address space
+    {                // if there is an address space
       // LB: Actually, the user state is void at that time. Keep this
       // action for consistency with the Scheduler::Run function
-      currentThread->RestoreUserState ();	// to restore, do it.
+      currentThread->RestoreUserState ();    // to restore, do it.
       currentThread->space->RestoreState ();
     }
 
@@ -336,7 +336,7 @@ Thread::StackAllocate (VoidFunctionPtr func, int arg)
 
 #ifdef HOST_SNAKE
     // HP stack works from low addresses to high addresses
-    stackTop = stack + 16;	// HP requires 64-byte frame marker
+    stackTop = stack + 16;    // HP requires 64-byte frame marker
     stack[StackSize - 1] = STACK_FENCEPOST;
 #else
     // i386 & MIPS & SPARC stack works from high addresses to low addresses
@@ -344,7 +344,7 @@ Thread::StackAllocate (VoidFunctionPtr func, int arg)
     // SPARC stack must contains at least 1 activation record to start with.
     stackTop = stack + StackSize - 96;
 #else // HOST_MIPS  || HOST_i386
-    stackTop = stack + StackSize - 4;	// -4 to be on the safe side!
+    stackTop = stack + StackSize - 4;    // -4 to be on the safe side!
 #ifdef HOST_i386
     // the 80386 passes the return address on the stack.  In order for
     // SWITCH() to go to ThreadRoot when we switch to this thread, the
@@ -385,7 +385,7 @@ void
 Thread::SaveUserState ()
 {
     for (int i = 0; i < NumTotalRegs; i++)
-	userRegisters[i] = machine->ReadRegister (i);
+    userRegisters[i] = machine->ReadRegister (i);
 }
 
 //----------------------------------------------------------------------
@@ -401,6 +401,6 @@ void
 Thread::RestoreUserState ()
 {
     for (int i = 0; i < NumTotalRegs; i++)
-	machine->WriteRegister (i, userRegisters[i]);
+    machine->WriteRegister (i, userRegisters[i]);
 }
 #endif

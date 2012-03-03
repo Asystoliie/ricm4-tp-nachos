@@ -5,21 +5,12 @@
 #include "system.h"
 #include "syscall.h"
 
-typedef struct {
-    int f;
-    int arg;
-} UserThreadArgs;
-
 class UserThread : public Thread {
     public:
-        UserThread(const char *debugName, int f, int arg);
-        UserThreadArgs *args;
-        void StartThread(void);
-        ~UserThread();
-
-#ifdef USER_PROGRAM
-// ...
-#endif
+        UserThread(const char *name, int f, int a);
+        int func;
+        int arg;
+        void Fork (); // Make userthread run (*f)(arg)
 };
 
 extern int do_UserThreadCreate(int f, int arg);

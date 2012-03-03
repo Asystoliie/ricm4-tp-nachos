@@ -93,6 +93,7 @@ class Thread
     // basic thread operations
 
     void Fork (VoidFunctionPtr func, int arg);	// Make thread run (*func)(arg)
+
     void Yield ();		// Relinquish the CPU if any
     // other thread is runnable
     void Sleep ();		// Put the thread to sleep and
@@ -101,17 +102,14 @@ class Thread
 
     void CheckOverflow ();	// Check if thread has
     // overflowed its stack
-    void setStatus (ThreadStatus st)
-    {
-	status = st;
+    void setStatus (ThreadStatus st) {
+        status = st;
     }
-    const char *getName ()
-    {
-	return (name);
+    const char *getName () {
+        return (name);
     }
-    void Print ()
-    {
-	printf ("%s, ", name);
+    void Print () {
+        printf ("%s, ", name);
     }
     int getId () { return (id); }
     void setId (int value) { id = value; }

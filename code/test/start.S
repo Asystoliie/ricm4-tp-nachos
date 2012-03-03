@@ -25,7 +25,7 @@
 __start:
     jal    main
     move    $4,$0
-    jal    Exit     /* if we return from main, exit(0) */
+    jal    UserThreadExit     /* if we return from main, we just need to exit the currentThread */
     .end __start
 
 /* -------------------------------------------------------------
@@ -290,4 +290,3 @@ UserThreadExit:
 __main:
         j       $31
         .end    __main
-

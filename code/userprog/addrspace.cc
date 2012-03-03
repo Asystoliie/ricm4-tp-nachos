@@ -87,21 +87,18 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
 
     // Le nombre de thread en cours d'executions (à protéger par un mutex)
-    this->runningThreads = 0;
+    this->runningThreads = 1; // 1 = le thread main//currentThread
     // l'objet bitmap qui permet de trouver les zones libres pour les
-    // nouveaux threads sans devoir gérer ça nous meme..
+    // nouveaux threads, sans devoir gérer ça nous meme..
+    // Ici on gere X zones de `UserThreadNumPage` pages
     this->stackBitMap = new BitMap(numPages / UserThreadNumPage);
     // Mutex pour manipuler la variable running_threads
     this->semRunningThreads = new Semaphore("semRunningThreads", 1);
     this->semStackBitMap = new Semaphore("semStackBitMap", 1);
-    this->semAnyThreads = new Semaphore("semAnyThreads", 0);
+    this->semWaitThreads = new Semaphore("semWaitThreads", 0);
 
-
-    // Initialisation du thread main
-    this->semStackBitMap->P();
     // La zone 0 est pour le thread main
     currentThread->setId(this->stackBitMap->Find());
-    this->semStackBitMap->V();
 
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
@@ -199,11 +196,11 @@ AddrSpace::InitThreadRegisters (int f, int arg, int threadId)
     // On ajoute l'arguments
     machine->WriteRegister (4, arg);
     // On se place sur la pile du thread
-    int pageThreadAddress = UserThreadNumPage * PageSize  * threadId;
-    machine->WriteRegister (StackReg, numPages * PageSize - 16 - PageSize - pageThreadAddress);
+    int threadOffset = UserThreadNumPage * PageSize  * threadId;
+    machine->WriteRegister (StackReg, numPages * PageSize - 16 - PageSize - threadOffset);
 
     DEBUG ('a', "Initializing thread stack register to %d\n",
-       numPages * PageSize - 16 - pageThreadAddress);
+       numPages * PageSize - 16 - threadOffset);
 }
 
 //----------------------------------------------------------------------
@@ -234,3 +231,15 @@ AddrSpace::RestoreState ()
     machine->pageTableSize = numPages;
 }
 
+
+void AddrSpace::UpdateRunningThreads(int value) {
+    ASSERT (value != 1 || value !=-1);
+    this->semRunningThreads->P();
+    this->runningThreads += value;
+    if(runningThreads == 0)
+        // On libere le thread main est en train d'attendre...
+        // Si je suis le thread main, je ne serrais alors pas bloqué plus tard
+        this->semWaitThreads->V();
+    printf("Nombre runningThread : %d\n", runningThreads);
+    this->semRunningThreads->V();
+}
