@@ -97,6 +97,10 @@ AddrSpace::AddrSpace (OpenFile * executable)
     this->semStackBitMap = new Semaphore("semStackBitMap", 1);
     this->semWaitThreads = new Semaphore("semWaitThreads", 0);
 
+    for (int j = 0; j<userMaxNumThread ; j++) {
+        semJoinThreads[j] = new Semaphore("semJoinThread ", 0);
+    }
+
     // La zone 0 est pour le thread main
     currentThread->setId(this->stackBitMap->Find());
 

@@ -263,7 +263,7 @@ UserThreadCreate:
         savoir qui sera le traitant de cette exception.
     */
     addiu $2,$0,SC_UserThreadCreate
-    addiu $6,$0,UserThreadExit
+    addiu $6,$0,UserThreadExit // On passe en parametre la fonction de retour
      /* syscall provoque un déroutement et place le compteur de
         programme (PC) à la première instruction du traitant :
         ExceptionHandler
@@ -284,6 +284,15 @@ UserThreadExit:
     syscall
     j    $31
     .end UserThreadExit
+
+
+    .globl UserThreadJoin
+    .ent UserThreadJoin
+UserThreadJoin:
+    addiu $2,$0,SC_UserThreadJoin
+    syscall
+    j    $31
+    .end UserThreadJoin
 
 /* dummy function to keep gcc happy */
         .globl  __main

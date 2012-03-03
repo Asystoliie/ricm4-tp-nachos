@@ -56,6 +56,8 @@ class AddrSpace
         Semaphore *semStackBitMap;
         // Pour la terminaison du thread main
         Semaphore *semWaitThreads;
+        // Pour permettre a un thread de se bloquer en attendant qu'un autre se termine
+        Semaphore *semJoinThreads[(int)(UserStackSize / (UserThreadNumPage * PageSize))];
 
         void UpdateRunningThreads(int i);
         void FreeBitMap();

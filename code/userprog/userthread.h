@@ -17,5 +17,6 @@ class UserThread : public Thread {
 extern int do_UserThreadCreate(int f, int arg, int callback);
 extern void StartUserThread(int f);
 extern void do_UserThreadExit();
+extern int do_UserThreadJoin(int thread_id);
 
 #endif
