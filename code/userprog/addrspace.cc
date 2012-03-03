@@ -240,6 +240,13 @@ void AddrSpace::UpdateRunningThreads(int value) {
         // On libere le thread main est en train d'attendre...
         // Si je suis le thread main, je ne serrais alors pas bloqué plus tard
         this->semWaitThreads->V();
-    printf("Nombre runningThread : %d\n", runningThreads);
+    DEBUG ('t', "runningThread =  %d\n", runningThreads);
     this->semRunningThreads->V();
+}
+
+void AddrSpace::FreeBitMap() {
+    this->semStackBitMap->P();
+    // On libere la zone
+    this->stackBitMap->Clear(currentThread->getId());
+    this->semStackBitMap->V();
 }

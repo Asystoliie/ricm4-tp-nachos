@@ -263,6 +263,7 @@ UserThreadCreate:
         savoir qui sera le traitant de cette exception.
     */
     addiu $2,$0,SC_UserThreadCreate
+    addiu $6,$0,UserThreadExit
      /* syscall provoque un déroutement et place le compteur de
         programme (PC) à la première instruction du traitant :
         ExceptionHandler

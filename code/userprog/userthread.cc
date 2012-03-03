@@ -14,8 +14,13 @@ UserThread::UserThread(const char *debugName, int f, int a) : Thread(debugName) 
 }
 
 void UserThread::Fork () {
-    DEBUG ('t', "Forking userThread");
+    DEBUG ('t', "Forking userThread \"%s\"\n", getName ());
+    UpdateCallBackRegister();
     Thread::Fork (StartUserThread, (int) this);
+}
+
+void UserThread::UpdateCallBackRegister() {
+    this->userRegisters[31] = machine->ReadRegister(6);
 }
 
 int do_UserThreadCreate(int f, int arg) {
@@ -39,6 +44,7 @@ int do_UserThreadCreate(int f, int arg) {
 
 void do_UserThreadExit() {
     currentThread->space->UpdateRunningThreads(-1); // appel atomique
+    currentThread->space->FreeBitMap(); // appel atomique
 
     // Je suis le main donc je vais attendre les autres
     if (currentThread->getId() == 0) {

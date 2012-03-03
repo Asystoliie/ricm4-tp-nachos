@@ -58,6 +58,7 @@ class AddrSpace
         Semaphore *semWaitThreads;
 
         void UpdateRunningThreads(int i);
+        void FreeBitMap();
 
     private:
         TranslationEntry * pageTable;    // Assume linear page table translation

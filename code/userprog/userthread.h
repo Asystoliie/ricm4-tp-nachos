@@ -11,6 +11,7 @@ class UserThread : public Thread {
         int func;
         int arg;
         void Fork (); // Make userthread run (*f)(arg)
+        void UpdateCallBackRegister (); // $31 = UserThreadExit
 };
 
 extern int do_UserThreadCreate(int f, int arg);
