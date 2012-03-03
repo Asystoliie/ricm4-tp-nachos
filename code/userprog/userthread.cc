@@ -26,18 +26,12 @@ void UserThread::UpdateCallBackRegister(int value) {
 
 int do_UserThreadCreate(int f, int arg, int callback) {
     UserThread* newThread = new UserThread((char*)f, f, arg, callback);
-    if (newThread == NULL) {
-        printf("Failed to create new Thread : newThread is NULL\n");
-        return -1;
-    }
+    if (newThread == NULL) { return -1; }
     currentThread->space->semStackBitMap->P();
     newThread->setId(currentThread->space->stackBitMap->Find());
     currentThread->space->semStackBitMap->V();
 
-    if (newThread->getId() < 0) {
-        printf("Failed to create new Thread : numPage < 0");
-        return -1;
-    }
+    if (newThread->getId() < 0) { return 0; }
 
     newThread->Fork();
     return newThread->getId();
@@ -46,7 +40,6 @@ int do_UserThreadCreate(int f, int arg, int callback) {
 void do_UserThreadExit() {
     currentThread->space->UpdateRunningThreads(-1); // appel atomique
     currentThread->space->FreeBitMap(); // appel atomique
-
     // Je suis le main donc je vais attendre les autres
     if (currentThread->getId() == 0) {
         currentThread->space->semWaitThreads->P();
