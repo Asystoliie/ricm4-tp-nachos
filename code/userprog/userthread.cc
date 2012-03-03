@@ -8,23 +8,24 @@ void StartUserThread(int thread) {
     machine->Run();
 }
 
-UserThread::UserThread(const char *debugName, int f, int a) : Thread(debugName) {
+UserThread::UserThread(const char *debugName, int f, int a, int callback) : Thread(debugName) {
     this->func = f;
     this->arg = a;
+    // A la fin du thread on appel cette nouvelle fonction
+    this->UpdateCallBackRegister(callback);
 }
 
 void UserThread::Fork () {
     DEBUG ('t', "Forking userThread \"%s\"\n", getName ());
-    UpdateCallBackRegister();
     Thread::Fork (StartUserThread, (int) this);
 }
 
-void UserThread::UpdateCallBackRegister() {
-    this->userRegisters[31] = machine->ReadRegister(6);
+void UserThread::UpdateCallBackRegister(int value) {
+    this->userRegisters[31] = value;
 }
 
-int do_UserThreadCreate(int f, int arg) {
-    UserThread* newThread = new UserThread((char*)f, f, arg);
+int do_UserThreadCreate(int f, int arg, int callback) {
+    UserThread* newThread = new UserThread((char*)f, f, arg, callback);
     if (newThread == NULL) {
         printf("Failed to create new Thread : newThread is NULL\n");
         return -1;

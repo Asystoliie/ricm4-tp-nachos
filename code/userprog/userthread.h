@@ -7,14 +7,14 @@
 
 class UserThread : public Thread {
     public:
-        UserThread(const char *name, int f, int a);
+        UserThread(const char *name, int f, int a, int callback);
         int func;
         int arg;
         void Fork (); // Make userthread run (*f)(arg)
-        void UpdateCallBackRegister (); // $31 = UserThreadExit
+        void UpdateCallBackRegister (int value); // $31 = value
 };
 
-extern int do_UserThreadCreate(int f, int arg);
+extern int do_UserThreadCreate(int f, int arg, int callback);
 extern void StartUserThread(int f);
 extern void do_UserThreadExit();
 

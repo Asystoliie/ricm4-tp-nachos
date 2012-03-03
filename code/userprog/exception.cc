@@ -181,7 +181,8 @@ ExceptionHandler (ExceptionType which)
 
           int f = machine->ReadRegister(4);
           int arg = machine->ReadRegister(5);
-          int ret = do_UserThreadCreate(f,arg);
+          int callback = machine->ReadRegister(6);
+          int ret = do_UserThreadCreate(f,arg, callback);
           machine->WriteRegister(2,ret);
           break;
         }
