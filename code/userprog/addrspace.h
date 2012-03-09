@@ -58,9 +58,19 @@ class AddrSpace
         Semaphore *semWaitThreads;
         // Pour permettre a un thread de se bloquer en attendant qu'un autre se termine
         Semaphore *semJoinThreads[(int)(UserStackSize / (UserThreadNumPage * PageSize))];
+	
 
         void UpdateRunningThreads(int i);
         void FreeBitMap();
+	
+	
+	int totalID;
+	int *tabID;
+	int getID(int indexBitMap);
+	void removeID(int indexBitMap);
+	int getZoneFromId(int thread_id);
+	//void addNewID();
+	//void removeID(int index);
 
     private:
         TranslationEntry * pageTable;    // Assume linear page table translation
@@ -68,5 +78,6 @@ class AddrSpace
         unsigned int numPages;    // Number of pages in the virtual
         // address space
 };
+
 
 #endif // ADDRSPACE_H

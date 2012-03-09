@@ -71,8 +71,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
     SwapHeader (&noffH);
     ASSERT (noffH.noffMagic == NOFFMAGIC);
 
-    // nombre de threads max
-    userMaxNumThread = (int)(UserStackSize / (UserThreadNumPage * PageSize));
+ 
 
     // how big is address space?
     size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;    // we need to increase the size
@@ -85,24 +84,36 @@ AddrSpace::AddrSpace (OpenFile * executable)
     // at least until we have
     // virtual memory
 
+	// nombre de threads max
+    userMaxNumThread = (int)(numPages / UserThreadNumPage);
 
     // Le nombre de thread en cours d'executions (à protéger par un mutex)
     this->runningThreads = 1; // 1 = le thread main//currentThread
     // l'objet bitmap qui permet de trouver les zones libres pour les
     // nouveaux threads, sans devoir gérer ça nous meme..
     // Ici on gere X zones de `UserThreadNumPage` pages
-    this->stackBitMap = new BitMap(numPages / UserThreadNumPage);
+    this->stackBitMap = new BitMap(userMaxNumThread);
     // Mutex pour manipuler la variable running_threads
     this->semRunningThreads = new Semaphore("semRunningThreads", 1);
     this->semStackBitMap = new Semaphore("semStackBitMap", 1);
     this->semWaitThreads = new Semaphore("semWaitThreads", 0);
+    
 
     for (int j = 0; j<userMaxNumThread ; j++) {
         semJoinThreads[j] = new Semaphore("semJoinThread ", 1);
     }
 
+    //initialisation du tableau des id  
+    totalID = 0;
+    tabID = new int[userMaxNumThread];
+    for(int j=0; j<userMaxNumThread; j++) {
+	tabID[j] = -1;	    
+    }
     // La zone 0 est pour le thread main
-    currentThread->setId(this->stackBitMap->Find());
+    
+    currentThread->setZone(this->stackBitMap->Find());
+    
+    currentThread->setId(this->getID(currentThread->getZone()));
 
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
@@ -120,7 +131,9 @@ AddrSpace::AddrSpace (OpenFile * executable)
       // a separate page, we could set its
       // pages to be read-only
       }
+      
 
+      
 // zero out the entire address space, to zero the unitialized data segment
 // and the stack segment
     bzero (machine->mainMemory, size);
@@ -155,6 +168,7 @@ AddrSpace::~AddrSpace ()
   // LB: Missing [] for delete
   // delete pageTable;
   delete [] pageTable;
+  delete [] tabID;
   // End of modification
 }
 
@@ -192,14 +206,14 @@ AddrSpace::InitRegisters ()
 }
 
 
-void AddrSpace::InitThreadRegisters (int f, int arg, int threadId)
+void AddrSpace::InitThreadRegisters (int f, int arg, int thread_zone)
 {
     machine->WriteRegister (PCReg, f);
     machine->WriteRegister (NextPCReg, f+4);
     // On ajoute l'arguments
     machine->WriteRegister (4, arg);
     // On se place sur la pile du thread
-    int threadOffset = UserThreadNumPage * PageSize  * threadId;
+    int threadOffset = UserThreadNumPage * PageSize  * thread_zone;
     machine->WriteRegister (StackReg, numPages * PageSize - 16 - PageSize - threadOffset);
 
     DEBUG ('a', "Initializing thread stack register to %d\n",
@@ -246,7 +260,27 @@ void AddrSpace::UpdateRunningThreads(int value) {
 void AddrSpace::FreeBitMap() {
     this->semStackBitMap->P();
     // On libere la zone
-    this->stackBitMap->Clear(currentThread->getId());
+    this->stackBitMap->Clear(currentThread->getZone());
+    this->removeID(currentThread->getZone());
     this->semStackBitMap->V();
 }
 
+int AddrSpace::getID(int indexBitMap){
+    int id = totalID;
+    tabID[indexBitMap]=id;
+    this->totalID++;
+    return id;
+}
+
+int AddrSpace::getZoneFromId(int thread_id) {
+	for(int j = 0; j<userMaxNumThread; j++) {
+		if (tabID[j] == thread_id) {
+			return j;
+		}
+	}
+	return -1;
+}
+
+void AddrSpace::removeID(int indexBitMap){
+    tabID[indexBitMap]=-1;
+}

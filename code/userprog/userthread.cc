@@ -3,7 +3,7 @@
 void StartUserThread(int thread) {
     UserThread *t = (UserThread *) thread;
     // L'id du thread informe egalement le numéro de page du thread
-    currentThread->space->InitThreadRegisters(t->func, t->arg, t->getId());
+    currentThread->space->InitThreadRegisters(t->func, t->arg, t->getZone());
     currentThread->space->UpdateRunningThreads(1); // appel atomique
     machine->Run();
 }
@@ -28,7 +28,7 @@ int do_UserThreadCreate(int f, int arg, int callback) {
     UserThread* newThread = new UserThread((char*)f, f, arg, callback);
     if (newThread == NULL) { return -1; }
     currentThread->space->semStackBitMap->P();
-    newThread->setId(currentThread->space->stackBitMap->Find());
+    newThread->setId(currentThread->space->getID(currentThread->space->stackBitMap->Find()));
     currentThread->space->semStackBitMap->V();
 
     if (newThread->getId() < 0) { return 0; }
@@ -52,7 +52,7 @@ void do_UserThreadExit() {
     // reveillent les uns les autres
 
     currentThread->space->FreeBitMap(); // appel atomique
-
+    
     currentThread->space->semRunningThreads->P();
     if(currentThread->space->runningThreads == 0)
         // On libere le thread main est en train d'attendre...
@@ -63,10 +63,10 @@ void do_UserThreadExit() {
     currentThread->Finish();
 }
 
-
 int do_UserThreadJoin(int thread_id) {
-    ASSERT(thread_id > 0);
-    if (currentThread->space->stackBitMap->Test(thread_id)) {
+    int zone = currentThread->space->getZoneFromId(thread_id);
+    ASSERT(thread_id >= 0);
+    if (currentThread->space->stackBitMap->Test(zone)) {
         // On attends que le thread se termine
         currentThread->space->semJoinThreads[thread_id]->P();
         // On reveille le suivant qui peut etre soit le prochain thread à qui

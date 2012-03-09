@@ -82,6 +82,7 @@ class Thread
     int *stackTop;		// the current stack pointer
     int machineState[MachineStateSize];	// all registers except for stackTop
     int id;
+    int zone;
 
   public:
       Thread (const char *debugName);	// initialize a Thread
@@ -113,7 +114,9 @@ class Thread
     }
     int getId () { return (id); }
     void setId (int value) { id = value; }
-
+    int getZone() { return zone; }
+    void setZone(int value) { zone = value; }
+    
   private:
     // some of the private data for this class is listed above
 
