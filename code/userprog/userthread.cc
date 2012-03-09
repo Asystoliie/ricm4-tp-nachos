@@ -43,11 +43,6 @@ int do_UserThreadCreate(int f, int arg, int callback) {
 
 void do_UserThreadExit() {
     currentThread->space->UpdateRunningThreads(-1); // appel atomique
-    // Je suis le main donc je vais attendre les autres
-    if (currentThread->getId() == 0) {
-        currentThread->space->semWaitThreads->P();
-        interrupt->Halt();
-    }
     // Sinon je suis qu'un misérable userthread et ma vie se termine ici...
 
     // On libere les threads en attente sur moi
@@ -57,6 +52,16 @@ void do_UserThreadExit() {
     // reveillent les uns les autres
 
     currentThread->space->FreeBitMap(); // appel atomique
+
+    this->semRunningThreads->P();
+    this->runningThreads += value;
+    if(runningThreads == 0)
+        // On libere le thread main est en train d'attendre...
+        // Si je suis le thread main, je ne serrais alors pas bloqué plus tard
+        // Il faut Exit()
+    DEBUG ('t', "runningThread =  %d\n", runningThreads);
+    this->semRunningThreads->V();
+
     currentThread->Finish();
 }
 

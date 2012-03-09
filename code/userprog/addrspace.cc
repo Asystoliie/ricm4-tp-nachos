@@ -239,10 +239,6 @@ void AddrSpace::UpdateRunningThreads(int value) {
     ASSERT (value != 1 || value !=-1);
     this->semRunningThreads->P();
     this->runningThreads += value;
-    if(runningThreads == 0)
-        // On libere le thread main est en train d'attendre...
-        // Si je suis le thread main, je ne serrais alors pas bloqué plus tard
-        this->semWaitThreads->V();
     DEBUG ('t', "runningThread =  %d\n", runningThreads);
     this->semRunningThreads->V();
 }
