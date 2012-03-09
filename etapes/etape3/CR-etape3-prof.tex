@@ -95,6 +95,11 @@ Vania \textsc{Marangozova}
 
 \section{Mise en place des threads \textit{utilisateurs}}
 
+Pour implementer les threads utilisateurs nous avons créer une nouvelle classe
+UserThread qui hérite de la classe Thread. Cette classe surcharge le
+comportement de la methode Thread::Fork(..) et implemente quelques mécanismes
+utiles pour les threads utilisateurs
+
 Avant de nous interesser au Multithreading, nous allons tous d'abord nous
 interesser au fonctionnement des threads sous NachOS.
 

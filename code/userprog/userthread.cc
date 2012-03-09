@@ -53,14 +53,12 @@ void do_UserThreadExit() {
 
     currentThread->space->FreeBitMap(); // appel atomique
 
-    this->semRunningThreads->P();
-    this->runningThreads += value;
-    if(runningThreads == 0)
+    currentThread->space->semRunningThreads->P();
+    if(currentThread->space->runningThreads == 0)
         // On libere le thread main est en train d'attendre...
         // Si je suis le thread main, je ne serrais alors pas bloqué plus tard
-        // Il faut Exit()
-    DEBUG ('t', "runningThread =  %d\n", runningThreads);
-    this->semRunningThreads->V();
+        interrupt->Halt();
+    currentThread->space->semRunningThreads->V();
 
     currentThread->Finish();
 }
