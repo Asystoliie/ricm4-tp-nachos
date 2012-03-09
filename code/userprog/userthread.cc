@@ -31,8 +31,11 @@ int do_UserThreadCreate(int f, int arg, int callback) {
     newThread->setId(currentThread->space->stackBitMap->Find());
     currentThread->space->semStackBitMap->V();
 
-
     if (newThread->getId() < 0) { return 0; }
+
+    // Avant de commencer on prend le jetton, pour que tout thread qui appelle
+    // userThreadJoin sur moi, est bloqué.
+    currentThread->space->semJoinThreads[newThread->getId()]->P();
 
     newThread->Fork();
     return newThread->getId();
@@ -49,15 +52,11 @@ void do_UserThreadExit() {
 
     // On libere les threads en attente sur moi
     currentThread->space->semJoinThreads[currentThread->getId()]->V();
-    // Dans notre implementation plusieurs thread ne peuvent pas attendre un meme
-    // thread, car un seul sera liberé (instruction ci dessus)
-    // Facilement amélirable nottament en creant une chaine de thread qui se libere
-    // Mais on a des soucis pour pouvoir reutilisé ce sémaphore, car il y aura
-    // au final toujours 1 jeton au lieu de 0, et donc plus aucun thread ne peut
-    // attendre le prochain thread a hériter de la zone
+    // Plusieurs threads peuvent attendre que je me termine.
+    // Il faut donc que dans la fonction join, les thread en attente se
+    // reveillent les uns les autres
 
     currentThread->space->FreeBitMap(); // appel atomique
-
     currentThread->Finish();
 }
 
@@ -67,7 +66,11 @@ int do_UserThreadJoin(int thread_id) {
     if (currentThread->space->stackBitMap->Test(thread_id)) {
         // On attends que le thread se termine
         currentThread->space->semJoinThreads[thread_id]->P();
+        // On reveille le suivant qui peut etre soit le prochain thread à qui
+        // on a allouer la zone, soit un autre thread qui avait appeller join
+        currentThread->space->semJoinThreads[thread_id]->V();
         return 0;
     }
     return -1;
 }
+

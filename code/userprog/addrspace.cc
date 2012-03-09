@@ -98,7 +98,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
     this->semWaitThreads = new Semaphore("semWaitThreads", 0);
 
     for (int j = 0; j<userMaxNumThread ; j++) {
-        semJoinThreads[j] = new Semaphore("semJoinThread ", 0);
+        semJoinThreads[j] = new Semaphore("semJoinThread ", 1);
     }
 
     // La zone 0 est pour le thread main
@@ -192,8 +192,7 @@ AddrSpace::InitRegisters ()
 }
 
 
-void
-AddrSpace::InitThreadRegisters (int f, int arg, int threadId)
+void AddrSpace::InitThreadRegisters (int f, int arg, int threadId)
 {
     machine->WriteRegister (PCReg, f);
     machine->WriteRegister (NextPCReg, f+4);
@@ -254,3 +253,4 @@ void AddrSpace::FreeBitMap() {
     this->stackBitMap->Clear(currentThread->getId());
     this->semStackBitMap->V();
 }
+

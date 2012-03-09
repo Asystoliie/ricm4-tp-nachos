@@ -3,8 +3,8 @@
 
 void print(int i) {
     int j = 0;
-    for (j=0; j<120000; j++) {}
-        PutInt(i);PutChar('\n');
+    for (j=0; j<12000; j++) {}
+    PutInt(i);PutChar('\n');
 /*    UserThreadExit(); // Facultatif*/
 }
 
@@ -27,3 +27,4 @@ int main() {
     PutString("Fin du main : \n");
     return 0;
 }
+
