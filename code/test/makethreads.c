@@ -12,7 +12,7 @@ int main() {
     PutString("Test de thread : \n");
     int i = 0;
     int thread_id;
-    for (i=0; i<900; i++) {
+    for (i=0; i<9; i++) {
         thread_id = UserThreadCreate(print, (void *)i);
         if (thread_id == 0) {
             PutString("Impossible de créer de nouveaux Thread\n");

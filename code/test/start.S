@@ -258,21 +258,9 @@ GetInt:
     .globl UserThreadCreate
     .ent UserThreadCreate
 UserThreadCreate:
-    /* On place le signal dans le registre R2
-        Il va servir au handler d'exceptions pour qu'il puisse
-        savoir qui sera le traitant de cette exception.
-    */
     addiu $2,$0,SC_UserThreadCreate
     addiu $6,$0,UserThreadExit // On passe en parametre la fonction de retour
-     /* syscall provoque un déroutement et place le compteur de
-        programme (PC) à la première instruction du traitant :
-        ExceptionHandler
-        */
     syscall
-     /* Maintenant on revient au programme appellant
-        Le registre R31 sauvegarde l'adresse de retour de la
-        fonction appellante
-        */
     j    $31
     .end UserThreadCreate
 
@@ -300,3 +288,4 @@ UserThreadJoin:
 __main:
         j       $31
         .end    __main
+

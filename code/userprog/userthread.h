@@ -10,7 +10,6 @@ class UserThread : public Thread {
         UserThread(const char *name, int f, int a, int callback);
         int func;
         int arg;
-	int zone;
         void Fork (); // Make userthread run (*f)(arg)
         void UpdateCallBackRegister (int value); // $31 = value
 };

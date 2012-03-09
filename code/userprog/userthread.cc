@@ -28,14 +28,19 @@ int do_UserThreadCreate(int f, int arg, int callback) {
     UserThread* newThread = new UserThread((char*)f, f, arg, callback);
     if (newThread == NULL) { return -1; }
     currentThread->space->semStackBitMap->P();
-    newThread->setId(currentThread->space->getID(currentThread->space->stackBitMap->Find()));
+    int zone = currentThread->space->stackBitMap->Find();
+    int thread_id = currentThread->space->GetNewThreadId(zone);
     currentThread->space->semStackBitMap->V();
 
-    if (newThread->getId() < 0) { return 0; }
+    if (zone < 0) { return 0; }
+    if (thread_id < 0) { return 0; }
+
+    newThread->setId(thread_id);
+    newThread->setZone(zone);
 
     // Avant de commencer on prend le jetton, pour que tout thread qui appelle
     // userThreadJoin sur moi, est bloqué.
-    currentThread->space->semJoinThreads[newThread->getId()]->P();
+    currentThread->space->semJoinThreads[newThread->getZone()]->P();
 
     newThread->Fork();
     return newThread->getId();
@@ -43,16 +48,17 @@ int do_UserThreadCreate(int f, int arg, int callback) {
 
 void do_UserThreadExit() {
     currentThread->space->UpdateRunningThreads(-1); // appel atomique
-    // Sinon je suis qu'un misérable userthread et ma vie se termine ici...
 
     // On libere les threads en attente sur moi
-    currentThread->space->semJoinThreads[currentThread->getId()]->V();
+    currentThread->space->semJoinThreads[currentThread->getZone()]->V();
     // Plusieurs threads peuvent attendre que je me termine.
     // Il faut donc que dans la fonction join, les thread en attente se
     // reveillent les uns les autres
 
+    // On a plus besoin de la zone
     currentThread->space->FreeBitMap(); // appel atomique
-    
+
+
     currentThread->space->semRunningThreads->P();
     if(currentThread->space->runningThreads == 0)
         // On libere le thread main est en train d'attendre...
@@ -64,14 +70,14 @@ void do_UserThreadExit() {
 }
 
 int do_UserThreadJoin(int thread_id) {
-    int zone = currentThread->space->getZoneFromId(thread_id);
-    ASSERT(thread_id >= 0);
+    int zone = currentThread->space->GetZoneFromThreadId(thread_id);
+    ASSERT(zone >= 0);
     if (currentThread->space->stackBitMap->Test(zone)) {
         // On attends que le thread se termine
-        currentThread->space->semJoinThreads[thread_id]->P();
+        currentThread->space->semJoinThreads[zone]->P();
         // On reveille le suivant qui peut etre soit le prochain thread à qui
         // on a allouer la zone, soit un autre thread qui avait appeller join
-        currentThread->space->semJoinThreads[thread_id]->V();
+        currentThread->space->semJoinThreads[zone]->V();
         return 0;
     }
     return -1;

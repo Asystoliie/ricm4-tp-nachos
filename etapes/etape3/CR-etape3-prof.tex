@@ -98,14 +98,64 @@ Vania \textsc{Marangozova}
 Pour implementer les threads utilisateurs nous avons créer une nouvelle classe
 UserThread qui hérite de la classe Thread. Cette classe surcharge le
 comportement de la methode Thread::Fork(..) et implemente quelques mécanismes
-utiles pour les threads utilisateurs
+utiles pour les threads utilisateurs. Cet objet va servir également à stocker
+les arguments qu'on passe à la fonction UserThreadCreate(). Ca nous evite de
+devoir utiliser une structure dédié au passage de parametre à Fork.
 
-Avant de nous interesser au Multithreading, nous allons tous d'abord nous
-interesser au fonctionnement des threads sous NachOS.
+\textit{code/userprog/userthread.h}
+\begin{lstlisting}
+class UserThread : public Thread {
+    public:
+        UserThread(const char *name, int f, int a, int callback);
+        int func;
+        int arg;
+        void Fork (); // Make userthread run (*f)(arg)
+        void UpdateCallBackRegister (int value); // $31 = value
+};
+\end{lstlisting}
 
-\subsection{Fonctionnement des threads sous NachOS}
+\textit{code/userprog/userthread.cc}
+\begin{lstlisting}
+void StartUserThread(int thread) {
+    UserThread *t = (UserThread *) thread;
+    // L'id du thread informe egalement le numéro de page du thread
+    currentThread->space->InitThreadRegisters(t->func, t->arg, t->getId());
+    currentThread->space->UpdateRunningThreads(1); // appel atomique
+    machine->Run();
+}
 
-Un thread NachOS comporte une structure de données (ContextBlock) contenant :  
+void UserThread::Fork () {
+    DEBUG ('t', "Forking userThread \"%s\"\n", getName ());
+    Thread::Fork (StartUserThread, (int) this);
+}
+\end{lstlisting}
+
+La fonction UpdateCallBackRegister permet de modifier l'adresse de retour
+(registre 31 dans MIPS) lors de l'appel système. En effet pour quitter les
+threads sans appel explicite de la fonction UserThreadExit(). Cette adresse est
+aumatiquement passée en paramètre dans le fichier start.S (registre 6)
+
+\begin{lstlisting}
+    .globl UserThreadCreate
+    .ent UserThreadCreate
+UserThreadCreate:
+    addiu $2,$0,SC_UserThreadCreate
+    addiu $6,$0,UserThreadExit // On passe en parametre la fonction de retour
+    syscall
+    j    $31
+    .end UserThreadCreate
+\end{lstlisting}
+
+Pour gérer plusieurs threads, nous sommes obligé de modifier la espace
+d'adressage (AddrSpace). Nous avons ainsi ajouté un compteur de thread en
+execution, un objet bitmap pour gérer l'allocation des zones de thread. Chaque
+thread a sa propre pile qui est une partie de la pile du processus. Ce partage
+se fait dans 
+
+
+de la pile
+User (dans Addrspace). 3 pages pour chaque thread)
+
 \vspace{0.3cm} \\
 \begin{tabular}{|l|l|}
 \hline 
