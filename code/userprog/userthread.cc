@@ -26,20 +26,19 @@ void UserThread::UpdateCallBackRegister(int value) {
 
 int do_UserThreadCreate(int f, int arg, int callback) {
     UserThread* newThread = new UserThread((char*)f, f, arg, callback);
-    if (newThread == NULL) { return -1; }
-    currentThread->space->semStackBitMap->P();
-    int zone = currentThread->space->stackBitMap->Find();
-    int thread_id = currentThread->space->GetNewThreadId(zone);
-    currentThread->space->semStackBitMap->V();
+    if (newThread == NULL) { return -1; } // Erreur
 
+    int zone = currentThread->space->GetNewZone();
     if (zone < 0) { return 0; }
+
+    int thread_id = currentThread->space->GetNewThreadId(zone);
     if (thread_id < 0) { return 0; }
 
     newThread->setId(thread_id);
     newThread->setZone(zone);
 
     // Avant de commencer on prend le jetton, pour que tout thread qui appelle
-    // userThreadJoin sur moi, est bloqué.
+    // userThreadJoin sur moi soit bloqué.
     currentThread->space->semJoinThreads[newThread->getZone()]->P();
 
     newThread->Fork();
@@ -49,28 +48,27 @@ int do_UserThreadCreate(int f, int arg, int callback) {
 void do_UserThreadExit() {
     currentThread->space->UpdateRunningThreads(-1); // appel atomique
 
-    // On libere les threads en attente sur moi
+    // Je libere les threads en attente sur moi
     currentThread->space->semJoinThreads[currentThread->getZone()]->V();
     // Plusieurs threads peuvent attendre que je me termine.
-    // Il faut donc que dans la fonction join, les thread en attente se
+    // Il faut donc que dans la fonction join, les threads en attente se
     // reveillent les uns les autres
 
-    // On a plus besoin de la zone
+    // Mise a jour de la bitmap et de la map {thread-id <-> numéro zone}
     currentThread->space->FreeBitMap(); // appel atomique
+    currentThread->space->RemoveId(currentThread->getZone()); // appel atomique
 
-
-    currentThread->space->semRunningThreads->P();
-    if(currentThread->space->runningThreads == 0)
-        // On libere le thread main est en train d'attendre...
-        // Si je suis le thread main, je ne serrais alors pas bloqué plus tard
+    // Si je suis le thread seul/dernier thread, je termine le processus
+    if(currentThread->space->Alone())
         interrupt->Halt();
-    currentThread->space->semRunningThreads->V();
 
     currentThread->Finish();
 }
 
 int do_UserThreadJoin(int thread_id) {
     int zone = currentThread->space->GetZoneFromThreadId(thread_id);
+    // Et si le thread se termine entre temps, comment faire ?
+    // Je sais pas pour le moment
     ASSERT(zone >= 0);
     if (currentThread->space->stackBitMap->Test(zone)) {
         // On attends que le thread se termine

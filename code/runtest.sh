@@ -23,12 +23,15 @@ if test -s "make_error.log"; then
     echo "---------"
     cat make_error.log
 else
-    echo "Lancement du programme :)"
-    echo "-------------------------"
+    echo "Lancement du Test 1 : Create & Exit :)"
+    echo "--------------------------------------"
     echo "$COMMAND"
     $COMMAND
+    echo "Fin Test 1"
+    echo "Lancement du Test 2 : Join :)"
+    echo "-----------------------------"
     echo "$COMMAND2"
     $COMMAND2
-
 fi
 rm make_error.log 2> /dev/null
+
