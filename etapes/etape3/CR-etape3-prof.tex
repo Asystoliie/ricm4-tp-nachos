@@ -95,12 +95,12 @@ Vania \textsc{Marangozova}
 
 \section{Git}
 
-Pour voir les differences entre l'etape 2 et l'etape 3 vous pouvez lancer un
+Pour voir les différences entre l'étape 2 et l'étape 3 vous pouvez lancer un
 diff avec le tag step2 :
 \begin{lstlisting}
 git diff step2
 \end{lstlisting}
-ou alors directement avec le commit 4a23b1..
+ou alors directement avec le commit 4a23b1...
 \begin{lstlisting}
 git diff 4a23b18e1b2b597b0454b768347d464f47ecb572
 \end{lstlisting}
@@ -156,8 +156,8 @@ Fin du main :
 Machine halting!
 \end{lstlisting}
 
-Sans l'option -rs fait le thread  main ne donne jamais la main aux autres
-threads. Comme on peut le voir sur le test 1, le nombre de thread simultané
+Sans l'option -rs le thread main ne donne jamais la main aux autres
+threads. Comme on peut le voir sur le test 1, le nombre de threads simultanés
 est limité (par la taille de l'espace d'adressage et la taille de la
 pile d'un thread). Dans ce cas un code d'erreur (-1) est renvoyé lors de
 l'appel à \textit{UserThreadCreate}.
@@ -165,12 +165,12 @@ l'appel à \textit{UserThreadCreate}.
 \section{Choix de conception}
 
 \subsection{La classe UserThread}
-Pour implementer les threads utilisateurs nous avons créé une nouvelle classe
+Pour implémenter les threads utilisateurs nous avons créé une nouvelle classe
 UserThread qui hérite de la classe Thread. Cette classe surcharge le
-comportement de la methode Thread::Fork(..) et implemente quelques mécanismes
+comportement de la méthode Thread::Fork(..) et implémente quelques mécanismes
 utiles pour les threads utilisateurs. Cet objet va servir également à stocker
-les arguments qu'on passe à la fonction UserThreadCreate(), ce qui nous evite
-de devoir utiliser une structure dédié au passage de parametre à Fork.
+les arguments qu'on passe à la fonction UserThreadCreate(), ce qui nous évite
+de devoir utiliser une structure dédiée au passage de paramètre à Fork.
 
 \textit{code/userprog/userthread.h}
 \begin{lstlisting}
@@ -205,7 +205,7 @@ void UserThread::Fork () {
 La fonction UpdateCallBackRegister permet de modifier l'adresse de retour
 (registre 31 dans MIPS) lors de l'appel système. En effet pour quitter les
 threads sans appel explicite de la fonction UserThreadExit(), nous devons au
-moment du lancement du nouveau thread de lui affecter comme adresse de retour
+moment du lancement du nouveau thread lui affecter comme adresse de retour
 l'adresse de la fonction UserThreadExit qu'on passe en paramètre dans
 le fichier start.S (registre 6)
 
@@ -223,26 +223,26 @@ UserThreadCreate:
 
 \subsection{Modifications de l'espace d'adressage du processus}
 
-Pour gérer plusieurs threads, nous sommes obligé de modifier l'espace
-d'adressage (AddrSpace) du processus. Nous avons entre autre ajouté le nombre
-de thread en execution, un objet bitmap pour gérer l'allocation des
-zones des threads et des sémaphores pour utiliser ces attribus en section
+Pour gérer plusieurs threads, nous sommes obligés de modifier l'espace
+d'adressage (AddrSpace) du processus. Nous avons entre autres ajouté le nombre
+de threads en exécution, un objet bitmap pour gérer l'allocation des
+zones des threads et des sémaphores pour utiliser ces attributs en section
 critique. Chaque thread a sa propre pile qui est une partie de la pile du
-processus (Sa taille est de 3 pages). Nous somme donc naturellement limité en
-nombre de threads en excution simultanée par processus. Lorsque cette limitation
+processus (sa taille est de 3 pages). Nous sommes donc naturellement limités en
+nombre de threads simultanés par processus. Lorsque cette limitation
 se manifeste, on renvoie simplement un code d'erreur (-1).
 
-Nous devons également differencier un thread d'un autre, pour celà on ajoute un
-attribut \textbf{Thread::id} et un compteur de thread pour eviter de réutiliser
-les identifiants de threads. On créer ensuite une association entre un thread
+Nous devons également différencier un thread d'un autre, pour cela on ajoute un
+attribut \textbf{Thread::id} et un compteur de thread pour éviter de réutiliser
+les identifiants de threads. On crée ensuite une association entre un thread
 (son id) et le numéro de la zone auquel il sera affecté lors de la création de
-ce dernier. Bien evidement la gestion de ces deux map (\textbf{bitmap} et
+ce dernier. Bien évidemment la gestion de ces deux maps (\textbf{bitmap} et
 \textbf{id//zone}) se fait en section critique.
 
 L'espace d'adressage est la partie commune de tous les threads (d'un même
-processus). C'est pour cette raison que nous avons ajouté plusieurs methodes
+processus). C'est pour cette raison que nous avons ajouté plusieurs méthodes
 qui vont ``rendre service'' aux threads. Par exemple, pour savoir s'il est le
-seul en cours d'execution, un thread ne peut pas le savoir directement, il va
+seul en cours d'exécution, un thread ne peut pas le savoir directement, il va
 utiliser la méthode \textbf{int AddrSpace::Alone()} qui va garantir que cette
 appel est atomique. C'est à AddrSpace que revient la responsabilité de garder
 un état cohérent des variable partagées.
@@ -260,43 +260,43 @@ int AddrSpace::Alone() {
 
 \subsection{Le Thread main est comme tous les autres}
 
-Notre implémentation des threads utilisateurs considere que même le thread main
-se comporte comme un thread utilisateur, c'est à dire qu'il sa propre pile (3
+Notre implémentation des threads utilisateurs considère que même le thread main
+se comporte comme un thread utilisateur, c'est-à-dire qu'il a sa propre pile (3
 pages) et qu'il cède sa place (sa pile) aux autres threads une fois terminé. Ce
-qui as pour principale consequence que l'appel \textbf{Exit()} ne se fait plus
+qui a pour principale consequence que l'appel \textbf{Exit()} ne se fait plus
 automatiquement à la fin du main, mais sera fait par le dernier thread en cours.
 
-Ceci dit, un thread (main ou pas) peut toujours appeller explicitement
+Ceci dit, un thread (main ou pas) peut toujours appeler explicitement
 \textbf{Exit()} pour arrêter le processus.
 
 
 \subsection{Mécanisme d'attente des threads (UserThreadJoin)}
 
-Nous utilisons un tableau de sémphore de la taille du nombre maximal de threads.
-Chaque thread (A) qui veut se bloque sur un autre (B) va devoir prendre un jeton
-du sémaphore lié au thread B sur lequel il veut se bloquer. Ces sémaphore sont
-donc bloquant lorsque le thread B est en cours d'execution.
+Nous utilisons un tableau de sémaphore de la taille du nombre maximal de threads.
+Chaque thread (A) qui veut se bloquer sur un autre (B) va devoir prendre un jeton
+du sémaphore lié au thread B sur lequel il veut se bloquer. Ces sémaphores sont
+donc bloquants lorsque le thread B est en cours d'exécution.
 
-Une fois terminé, le thread B va reveiller les threads qui se sont bloqué que
-lui en deposant un jeton dans le sémphore concerné.
-Pour permettre à plusieurs thread de se bloquer sur le meme thread , la phase
-de reveil doit se faire en chaîne, c'est à dire chaque thread reveillé doit
-reveillé le suivant etc..
+Une fois terminé, le thread B va réveiller les threads qui se sont bloqués que
+lui en déposant un jeton dans le sémaphore concerné.
+Pour permettre à plusieurs threads de se bloquer sur le même thread, la phase
+de réveil doit se faire en chaîne, c'est-à-dire chaque thread réveillé doit
+réveiller le suivant etc..
 
-Ce mécanisme doit également bloqué le prochain thread qui va s'exécuter dans
-la nouvelle zone liberé par le thread B.
+Ce mécanisme doit également bloquer le prochain thread qui va s'exécuter dans
+la nouvelle zone liberée par le thread B.
 
-Pour arriver à se resultat, nous initialisons le tableau de sémaphore à 1 jeton
-chacun. A chaque creation, il faut prendre un jeton (pour le sémphore devienne
-bloquant pour tout les threads qui appelle \textbf{UserThreadJoin()}). Si il y
-a une phase de reveil qui est en cours, ce nouveau thread sera bloqué, et
-c'est ce qu'on cherche pour pas qu'un thread bloqué sur un thread spécifique
-se retrouve bloqué sur d'autres (avec le risque qu'il ne reveille jamais)
+Pour arriver à ce résultat, nous initialisons le tableau de sémaphore à un jeton
+chacun. A chaque création, il faut prendre un jeton (pour que le sémaphore
+devienne bloquant pour tous les threads qui appellent \textbf{UserThreadJoin()}).
+S'il y a une phase de réveil qui est en cours, ce nouveau thread sera bloqué,
+et c'est ce qu'on cherche pour pas qu'un thread bloqué sur un thread spécifique
+se retrouve bloqué sur d'autres (avec le risque qu'il ne se réveille jamais)
 
 \begin{lstlisting}
 int do_UserThreadCreate(int f, int arg, int callback) {
     [...]
-    // Avant de commencer on prend le jetton, pour que tout thread qui appelle
+    // Avant de commencer on prend le jeton, pour que tout thread qui appelle
     // userThreadJoin sur moi soit bloqué.
     currentThread->space->semJoinThreads[newThread->getZone()]->P();
     [...]
@@ -313,7 +313,7 @@ void do_UserThreadExit() {
     currentThread->space->semJoinThreads[currentThread->getZone()]->V();
     // Plusieurs threads peuvent attendre que je me termine.
     // Il faut donc que dans la fonction join, les threads en attente se
-    // reveillent les uns les autres
+    // réveillent les uns les autres
     [...]
     currentThread->Finish();
 }
@@ -325,8 +325,8 @@ int do_UserThreadJoin(int thread_id) {
     if (zone < 0)
         return zone;
     currentThread->space->semJoinThreads[zone]->P();
-    // On reveille le suivant qui peut etre soit le prochain thread à qui
-    // on a allouer la zone, soit un autre thread qui avait appeller join
+    // On réveille le suivant qui peut être soit le prochain thread à qui
+    // on a alloué la zone, soit un autre thread qui avait appelé join
     currentThread->space->semJoinThreads[zone]->V();
     return 0;
 }
@@ -338,26 +338,26 @@ int do_UserThreadJoin(int thread_id) {
 \subsubsection{Les identifiants de threads}
 
 Pour éviter de réutiliser les identifiants de threads, nous avons mis en place
-un compteur qu'on incremente. Il faudrai prévoir un mécanisme qui remet à zéro
+un compteur qu'on incrémente. Il faudrait prévoir un mécanisme qui remet à zéro
 ce compteur.
 
 \subsubsection{Gestion de l'espace des threads}
 
-Un handicap important de notre implmentation est la gestion des dépassements
-mémoire : on ne garantis à \textbf{aucun moment} qu'un thread ne va pas depasser
-sa pile, et donc il peut tres bien écraser la mémoire d'un autre thread d'un
-autre thread. Il faudrais mettre en place des mecanisme pour limiter
-l'utilisation de la pile d'un thread a son espace propre. Par exemple, vérfier a
-chaque lecture memoire, qu'il est autoriser à ecrire/lire.
+Un handicap important de notre implémentation est la gestion des dépassements
+mémoire : on ne garantit à \textbf{aucun moment} qu'un thread ne va pas dépasser
+sa pile, et donc il peut très bien écraser la mémoire d'un autre thread d'un
+autre thread. Il faudrait mettre en place des mécanismes pour limiter
+l'utilisation de la pile d'un thread à son espace propre. Par exemple, vérifier
+à chaque lecture memoire, qu'il est autorisé à écrire/lire.
 
-Une des amélorations possibles, serait la gestion dynamique de la taille
-de la pile d'un thread. Dans notre solution (3 pages par thread) On a soit de
-la fragmentation interne soit de depassements, mais meme avec un mecanisme de
-non-depassement, le thread peut planter, car il n'a pas la possibilité
-d'etendre sa pile. Une solution possible est d'utiliser pour
+Une des améliorations possibles, serait la gestion dynamique de la taille
+de la pile d'un thread. Dans notre solution (3 pages par thread) on a soit de
+la fragmentation interne soit des dépassements, mais même avec un mécanisme de
+non-dépassement, le thread peut planter, car il n'a pas la possibilité
+d'étendre sa pile. Une solution possible est d'utiliser pour
 chaque nouveau thread une taille de pile minimale (une page), mais en cas de
-depassement, ajouter une nouvelle page a sa pile...Ce qui revient à prévoir un
-mécanisme de segmentation inter-processus
+dépassement, ajouter une nouvelle page a sa pile...ce qui revient à prévoir un
+mécanisme de segmentation inter-processus.
 
 \end{document}
 
