@@ -93,14 +93,84 @@ Vania \textsc{Marangozova}
 
 \end{titlepage}
 
-\section{Mise en place des threads \textit{utilisateurs}}
+\section{Git}
 
-Pour implementer les threads utilisateurs nous avons créer une nouvelle classe
+Pour voir les differences entre l'etape 2 et l'etape 3 vous pouvez lancer un
+diff avec le tag step2 :
+\begin{lstlisting}
+git diff step2
+\end{lstlisting}
+ou alors directement avec le commit 4a23b1..
+\begin{lstlisting}
+git diff 4a23b18e1b2b597b0454b768347d464f47ecb572
+\end{lstlisting}
+
+\section{Test de l'étape 3}
+
+Vous pouvez soit lancer le script de test automatique \textit{runtest.sh} soit
+lancer manuellement les deux programmes \textit{./build-origin/nachos-userprog
+-rs 1 -x ./build/jointhreads} et \textit{./build-origin/nachos-userprog -rs 1 -x
+./build/makethreads}
+
+\begin{lstlisting}
+$ ./runtest.sh
+Compilation en cours...
+Lancement du Test 1 : Create & Exit :)
+--------------------------------------
+./build-origin/nachos-userprog -rs 1 -x ./build/makethreads
+Test de thread :
+Thread : 0 OK
+Thread : 1 OK
+Thread : 2 OK
+Thread : 3 OK
+Thread : 4 OK
+Thread : 5 OK
+Thread : 6 OK
+Thread : 7 OK
+Thread : 8 OK
+Impossible de créer de nouveaux Thread
+Fin du main :
+0
+2
+1
+3
+4
+6
+5
+8
+7
+Machine halting!
+Fin Test 1
+Lancement du Test 2 : Join :)
+-----------------------------
+./build-origin/nachos-userprog -rs 1 -x ./build/jointhreads
+Je lance le Thread 1
+1
+Fin Thread 1
+Je lance le Thread 2
+2
+Fin Thread 2
+Je lance le Thread 3
+3
+Fin du main :
+Machine halting!
+\end{lstlisting}
+
+Sans l'option -rs fait le thread  main ne donne jamais la main aux autres
+threads. Comme on peut le voir sur le test 1, le nombre de thread simultané
+est limité (par la taille de l'espace d'adressage et la taille de la
+pile d'un thread). Dans ce cas un code d'erreur (-1) est renvoyé lors de
+l'appel à \textit{UserThreadCreate}.
+
+\section{Choix de conception}
+
+\subsection{La classe UserThread}
+Pour implementer les threads utilisateurs nous avons créé une nouvelle classe
 UserThread qui hérite de la classe Thread. Cette classe surcharge le
 comportement de la methode Thread::Fork(..) et implemente quelques mécanismes
 utiles pour les threads utilisateurs. Cet objet va servir également à stocker
-les arguments qu'on passe à la fonction UserThreadCreate(). Ca nous evite de
-devoir utiliser une structure dédié au passage de parametre à Fork.
+les arguments qu'on passe à la fonction UserThreadCreate(), ce qui nous evite
+de devoir utiliser une structure dédié au passage de parametre à Fork.
 
 \textit{code/userprog/userthread.h}
 \begin{lstlisting}
@@ -130,10 +200,14 @@ void UserThread::Fork () {
 }
 \end{lstlisting}
 
+\subsection{Appel implicite de UserThreadExit}
+
 La fonction UpdateCallBackRegister permet de modifier l'adresse de retour
 (registre 31 dans MIPS) lors de l'appel système. En effet pour quitter les
-threads sans appel explicite de la fonction UserThreadExit(). Cette adresse est
-aumatiquement passée en paramètre dans le fichier start.S (registre 6)
+threads sans appel explicite de la fonction UserThreadExit(), nous devons au
+moment du lancement du nouveau thread de lui affecter comme adresse de retour
+l'adresse de la fonction UserThreadExit qu'on passe en paramètre dans
+le fichier start.S (registre 6)
 
 \begin{lstlisting}
     .globl UserThreadCreate
@@ -146,116 +220,144 @@ UserThreadCreate:
     .end UserThreadCreate
 \end{lstlisting}
 
-Pour gérer plusieurs threads, nous sommes obligé de modifier la espace
-d'adressage (AddrSpace). Nous avons ainsi ajouté un compteur de thread en
-execution, un objet bitmap pour gérer l'allocation des zones de thread. Chaque
-thread a sa propre pile qui est une partie de la pile du processus. Ce partage
-se fait dans 
 
+\subsection{Modifications de l'espace d'adressage du processus}
 
-de la pile
-User (dans Addrspace). 3 pages pour chaque thread)
+Pour gérer plusieurs threads, nous sommes obligé de modifier l'espace
+d'adressage (AddrSpace) du processus. Nous avons entre autre ajouté le nombre
+de thread en execution, un objet bitmap pour gérer l'allocation des
+zones des threads et des sémaphores pour utiliser ces attribus en section
+critique. Chaque thread a sa propre pile qui est une partie de la pile du
+processus (Sa taille est de 3 pages). Nous somme donc naturellement limité en
+nombre de threads en excution simultanée par processus. Lorsque cette limitation
+se manifeste, on renvoie simplement un code d'erreur (-1).
 
-\vspace{0.3cm} \\
-\begin{tabular}{|l|l|}
-\hline 
- \textbf{status} & JUST\_CREATED, RUNNING, READY, BLOCKED \\ \hline 
- \textbf{stack}& L'emplacement (bas) de la pile \\ \hline
- \textbf{stackTops}& Sommet de la pile \\ \hline
- \textbf{machineState}&Le contenu de l'ensemble de registres \\ \hline
- \textbf{userRegisters} &Le contenu de chaque registre (Thread user) \\ \hline
- \textbf{space}& L'espace d'adressage (Thread user) \\ \hline
-\end{tabular} \\
-\vspace{0.2cm} \\
+Nous devons également differencier un thread d'un autre, pour celà on ajoute un
+attribut \textbf{Thread::id} et un compteur de thread pour eviter de réutiliser
+les identifiants de threads. On créer ensuite une association entre un thread
+(son id) et le numéro de la zone auquel il sera affecté lors de la création de
+ce dernier. Bien evidement la gestion de ces deux map (\textbf{bitmap} et
+\textbf{id//zone}) se fait en section critique.
 
-Un thread est tout d'abord créé avec la méthode Thread() dans le fichier 
-\textit{threads/thread.cc}. Cette méthode initialise la pile, le pointeur de la 
-pile et le thread est en état: \textit{JUST\_CREATED}. Cet état temporaire indique
-que le thread est créé mais n'est pas encore prêt (READY) à être executé. 
-
-L'appel Fork (différent du Fork Posix) qui va rendre ce
-thread exécutable. Concrètement, la pile de notre thread sera alloué et 
-initialisé dans cette fonction. Il va être ensuite mise dans l'ordannanceur de NachOS
-pour qu'il puisse être executé. La pile d'un thread NachOS
-
-La fonction \textit{saveUserState} : sert à sauvegarder le contexte d'exécution
-du programme lors d'une commutation. Les informations telles que l'état des
-registres ou encore le pointeur de pile sont sauvegardées dans le contextBlock.
-Ce contexte sera restauré lorsque le Thread est élu avec la méthode
-\textit{restoreUserState}.
-
-\subsection{Description de l'instalation d'un programme utilisateur dans
-l'environnement NachOS}
-
-Le lancement pas à pas permet de mettre en evidence plusieurs étapes lors du
-lancement d'un programme dans l'environnement Nachos.
+L'espace d'adressage est la partie commune de tous les threads (d'un même
+processus). C'est pour cette raison que nous avons ajouté plusieurs methodes
+qui vont ``rendre service'' aux threads. Par exemple, pour savoir s'il est le
+seul en cours d'execution, un thread ne peut pas le savoir directement, il va
+utiliser la méthode \textbf{int AddrSpace::Alone()} qui va garantir que cette
+appel est atomique. C'est à AddrSpace que revient la responsabilité de garder
+un état cohérent des variable partagées.
 
 \begin{lstlisting}
-Initializing address space, num pages 12, size 1536
-Initializing code segment, at 0x0, size 384
-Initializing data segment, at 0x180, size 32
-Initializing stack register to 1520
-Starting thread "main" at time 10
+int AddrSpace::Alone() {
+    int value = 0;
+    this->semRunningThreads->P();
+    if (this->runningThreads == 0)
+        value = 1;
+    this->semRunningThreads->V();
+    return value;
+}
 \end{lstlisting}
 
-\subsubsection{Création de l'espace d'adressage}
+\subsection{Le Thread main est comme tous les autres}
 
-La premiere étape est la construction de l'espace d'adressage dans
-\textit{::AddrSpace}. Le fichier exécutable est stocké dans un objet Noff. Ce
-dernier contient le text, les données et les variables non initialisées. La
-taille total de l'espace d'adressage est la somme de ces trois zones au quelle
-on ajoute la taille de pile utilisateur qui est de 4Ko (1024 * 4).
+Notre implémentation des threads utilisateurs considere que même le thread main
+se comporte comme un thread utilisateur, c'est à dire qu'il sa propre pile (3
+pages) et qu'il cède sa place (sa pile) aux autres threads une fois terminé. Ce
+qui as pour principale consequence que l'appel \textbf{Exit()} ne se fait plus
+automatiquement à la fin du main, mais sera fait par le dernier thread en cours.
+
+Ceci dit, un thread (main ou pas) peut toujours appeller explicitement
+\textbf{Exit()} pour arrêter le processus.
+
+
+\subsection{Mécanisme d'attente des threads (UserThreadJoin)}
+
+Nous utilisons un tableau de sémphore de la taille du nombre maximal de threads.
+Chaque thread (A) qui veut se bloque sur un autre (B) va devoir prendre un jeton
+du sémaphore lié au thread B sur lequel il veut se bloquer. Ces sémaphore sont
+donc bloquant lorsque le thread B est en cours d'execution.
+
+Une fois terminé, le thread B va reveiller les threads qui se sont bloqué que
+lui en deposant un jeton dans le sémphore concerné.
+Pour permettre à plusieurs thread de se bloquer sur le meme thread , la phase
+de reveil doit se faire en chaîne, c'est à dire chaque thread reveillé doit
+reveillé le suivant etc..
+
+Ce mécanisme doit également bloqué le prochain thread qui va s'exécuter dans
+la nouvelle zone liberé par le thread B.
+
+Pour arriver à se resultat, nous initialisons le tableau de sémaphore à 1 jeton
+chacun. A chaque creation, il faut prendre un jeton (pour le sémphore devienne
+bloquant pour tout les threads qui appelle \textbf{UserThreadJoin()}). Si il y
+a une phase de reveil qui est en cours, ce nouveau thread sera bloqué, et
+c'est ce qu'on cherche pour pas qu'un thread bloqué sur un thread spécifique
+se retrouve bloqué sur d'autres (avec le risque qu'il ne reveille jamais)
 
 \begin{lstlisting}
-#define UserStackSize		1024
+int do_UserThreadCreate(int f, int arg, int callback) {
+    [...]
+    // Avant de commencer on prend le jetton, pour que tout thread qui appelle
+    // userThreadJoin sur moi soit bloqué.
+    currentThread->space->semJoinThreads[newThread->getZone()]->P();
+    [...]
+    newThread->Fork();
+    return newThread->getId();
+}
 \end{lstlisting}
 
-Avant de stocker cet espace d'adressage il faut connaitre le nombre de pages
-necessaires. Le système calcule le nombre de pages puis les initialise pour
-avoir la correspondance entres adresses virtelles et adresses physiques. Une
-fois les pages correctement initialisées, on copie les differentes zones en
-mémoires et ferme le fichier exécutable.
-
-\subsubsection{Initialisation des registres}
-
-Dans \textit{::InitRegisters} 
 \begin{lstlisting}
-for (i = 0; i < NumTotalRegs; i++)
-   machine->WriteRegister (i, 0);
-machine->WriteRegister (PCReg, 0);
-machine->WriteRegister (NextPCReg, 4);
-machine->WriteRegister (StackReg, numPages * PageSize - 16)
+void do_UserThreadExit() {
+    currentThread->space->UpdateRunningThreads(-1); // appel atomique
+    [...]
+    // Je libere les threads en attente sur moi
+    currentThread->space->semJoinThreads[currentThread->getZone()]->V();
+    // Plusieurs threads peuvent attendre que je me termine.
+    // Il faut donc que dans la fonction join, les threads en attente se
+    // reveillent les uns les autres
+    [...]
+    currentThread->Finish();
+}
 \end{lstlisting}
 
-Comme on peut le voir, tous les registres sont mis à zéro. Trois
-registres sont ensuite initialisés : PCReg qui pointe sur la première
-instruction du programme (0x0). MIPS utilise également un pointeur sur
-l'instruction N+1, soit à l'adresse 0x4. Enfin le pointeur de pile (StackReg)
-qui pointe vers la fin de l'espace d'adressage.
-
-[...Pourquoi -16 ?...]
-
-\subsubsection{Lancement du programme utilisateur}
-
-L'exécution du programme est effectuée par la méthode \textit{::Run}. Celle ci
-parcours les inscrutions en incrementant l'horloge à l'aide de la fonction
-OneTick.
-
-\subsection{Threads utilisateurs: étape préliminaire}
-
-ù\subsubsection{Appels systèmes}
-
-  La fonction \textit{UserThreadCreate(...)}
-
-\subsubsection{Création de la fonction}
-
-Sans l'option -rs fait le thread  main ne donne JAMAIS la main au thread user!
-
-\section{Notre implémentation}
+\begin{lstlisting}
+int do_UserThreadJoin(int thread_id) {
+    int zone = currentThread->space->GetZoneFromThreadId(thread_id);
+    if (zone < 0)
+        return zone;
+    currentThread->space->semJoinThreads[zone]->P();
+    // On reveille le suivant qui peut etre soit le prochain thread à qui
+    // on a allouer la zone, soit un autre thread qui avait appeller join
+    currentThread->space->semJoinThreads[zone]->V();
+    return 0;
+}
+\end{lstlisting}
 
 
+\subsection{Améliorations possibles}
 
-\section{Plusieurs threads par processus}
+\subsubsection{Les identifiants de threads}
 
+Pour éviter de réutiliser les identifiants de threads, nous avons mis en place
+un compteur qu'on incremente. Il faudrai prévoir un mécanisme qui remet à zéro
+ce compteur.
+
+\subsubsection{Gestion de l'espace des threads}
+
+Un handicap important de notre implmentation est la gestion des dépassements
+mémoire : on ne garantis à \textbf{aucun moment} qu'un thread ne va pas depasser
+sa pile, et donc il peut tres bien écraser la mémoire d'un autre thread d'un
+autre thread. Il faudrais mettre en place des mecanisme pour limiter
+l'utilisation de la pile d'un thread a son espace propre. Par exemple, vérfier a
+chaque lecture memoire, qu'il est autoriser à ecrire/lire.
+
+Une des amélorations possibles, serait la gestion dynamique de la taille
+de la pile d'un thread. Dans notre solution (3 pages par thread) On a soit de
+la fragmentation interne soit de depassements, mais meme avec un mecanisme de
+non-depassement, le thread peut planter, car il n'a pas la possibilité
+d'etendre sa pile. Une solution possible est d'utiliser pour
+chaque nouveau thread une taille de pile minimale (une page), mais en cas de
+depassement, ajouter une nouvelle page a sa pile...Ce qui revient à prévoir un
+mécanisme de segmentation inter-processus
 
 \end{document}
+

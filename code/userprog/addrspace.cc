@@ -165,6 +165,11 @@ AddrSpace::~AddrSpace ()
   // delete pageTable;
   delete [] pageTable;
   delete [] threadZoneMap;
+  delete stackBitMap;
+  delete semRunningThreads;
+  delete semStackBitMap;
+  delete [] semJoinThreads;
+  delete semThreadZoneMap;
   // End of modification
 }
 
@@ -292,7 +297,8 @@ int AddrSpace::GetZoneFromThreadId(int thread_id) {
     this->semThreadZoneMap->P();
     for(int j = 0; j<userMaxNumThread; j++) {
         if (threadZoneMap[j] == thread_id) {
-            zone = j;
+            if (this->stackBitMap->Test(j))
+                zone = j;
             break;
         }
     }

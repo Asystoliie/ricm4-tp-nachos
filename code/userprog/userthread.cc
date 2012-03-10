@@ -67,17 +67,12 @@ void do_UserThreadExit() {
 
 int do_UserThreadJoin(int thread_id) {
     int zone = currentThread->space->GetZoneFromThreadId(thread_id);
-    // Et si le thread se termine entre temps, comment faire ?
-    // Je sais pas pour le moment
-    ASSERT(zone >= 0);
-    if (currentThread->space->stackBitMap->Test(zone)) {
-        // On attends que le thread se termine
-        currentThread->space->semJoinThreads[zone]->P();
-        // On reveille le suivant qui peut etre soit le prochain thread à qui
-        // on a allouer la zone, soit un autre thread qui avait appeller join
-        currentThread->space->semJoinThreads[zone]->V();
-        return 0;
-    }
-    return -1;
+    if (zone < 0)
+        return zone;
+    currentThread->space->semJoinThreads[zone]->P();
+    // On reveille le suivant qui peut etre soit le prochain thread à qui
+    // on a allouer la zone, soit un autre thread qui avait appeller join
+    currentThread->space->semJoinThreads[zone]->V();
+    return 0;
 }
 
