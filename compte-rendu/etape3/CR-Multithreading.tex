@@ -3,7 +3,7 @@
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{graphicx}
-\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\newcommand{\HRule}{\rule{\linewidth}{0.6mm}}
 \usepackage{subfigure}
 \usepackage{multicol}
 \usepackage[usenames,dvipsnames]{color}
@@ -54,7 +54,7 @@
 
 
 % Upper part of the page
-\includegraphics[width=0.25\textwidth]{./images/logo}\\[1cm]
+\includegraphics[width=0.25\textwidth]{../images/logo}\\[1cm]
 
 \textsc{\LARGE Polytech' Grenoble}\\[1.5cm]
 
@@ -343,12 +343,12 @@ ce compteur.
 
 \subsubsection{Gestion de l'espace des threads}
 
-Un handicap important de notre implémentation est la gestion des dépassements
-mémoire : on ne garantit à \textbf{aucun moment} qu'un thread ne va pas dépasser
-sa pile, et donc il peut très bien écraser la mémoire d'un autre thread d'un
-autre thread. Il faudrait mettre en place des mécanismes pour limiter
-l'utilisation de la pile d'un thread à son espace propre. Par exemple, vérifier
-à chaque lecture memoire, qu'il est autorisé à écrire/lire.
+Un handicap important de notre implémentation est la nont-gestion des
+dépassements mémoire : on ne garantit à \textbf{aucun moment} qu'un thread ne va
+pas dépasser sa pile, et donc il peut très bien écraser la mémoire d'un autre
+thread d'un autre thread. Il faudrait mettre en place des mécanismes pour
+limiter l'utilisation de la pile d'un thread à son espace propre. Par exemple,
+vérifier à chaque lecture memoire, qu'il est autorisé à écrire/lire.
 
 Une des améliorations possibles, serait la gestion dynamique de la taille
 de la pile d'un thread. Dans notre solution (3 pages par thread) on a soit de

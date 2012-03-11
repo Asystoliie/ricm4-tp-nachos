@@ -42,7 +42,8 @@
 \pagestyle{fancy}
 \usepackage{lastpage}
 \renewcommand\headrulewidth{1pt}
-\fancyhead[L]{\textsc{Nachos Étape 3 : Multithreading}}
+\fancyhead[L]{\textsc{Nachos Étape 3 : Multithreading - Fonctionnement des
+threads}}
 \fancyhead[R]{\textsc{Polytech' Grenoble}}
 \renewcommand\footrulewidth{1pt}
 \fancyfoot[R]{ \textsc{RICM 4}}
@@ -185,22 +186,6 @@ qui pointe vers la fin de l'espace d'adressage.
 L'exécution du programme est effectuée par la méthode \textit{::Run}. Celle ci
 parcours les inscrutions en incrementant l'horloge à l'aide de la fonction
 OneTick.
-
-\subsection{Threads utilisateurs: étape préliminaire}
-
-ù\subsubsection{Appels systèmes}
-
-  La fonction \textit{UserThreadCreate(...)}
-
-\subsubsection{Création de la fonction}
-
-Sans l'option -rs fait le thread  main ne donne JAMAIS la main au thread user!
-
-\section{Notre implémentation}
-
-
-
-\section{Plusieurs threads par processus}
 
 
 \end{document}
