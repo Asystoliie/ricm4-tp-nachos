@@ -1,6 +1,8 @@
 *~
 code/build/*
+!code/build/Makefile
 code/build-origin/*
+!code/build-origin/Makefile
 code/bin/coff2noff
 code/bin/*.o
 code/bin/.*.d
