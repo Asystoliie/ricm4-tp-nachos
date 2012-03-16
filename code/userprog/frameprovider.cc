@@ -44,7 +44,7 @@ int FrameProvider::NumAvailFrame() {
     this->semFrameBitMap->P();
     int num = 0;
     for(int i = 0; i<this->lenght; i++) {
-        if (this->bitmap->Test(i))
+        if (!this->bitmap->Test(i))
             num++;
     }
     this->semFrameBitMap->V();

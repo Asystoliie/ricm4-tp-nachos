@@ -138,10 +138,10 @@ AddrSpace::AddrSpace (OpenFile * executable)
         numPages, size);
 
     // NumAvailFrame == atomique
-//    if ((int) numPages > frameprovider->NumAvailFrame()) {
-//        DEBUG ('p', "Pas suffisamment de memoire (%d / %d)!\n",numPages, frameprovider->NumAvailFrame ());
-//        return;
-//    }
+    if ((int) numPages > frameprovider->NumAvailFrame()) {
+        DEBUG ('p', "Pas suffisamment de memoire (%d / %d)!\n",numPages, frameprovider->NumAvailFrame ());
+        return;
+    }
 
     // first, set up the translation
     pageTable = new TranslationEntry[numPages];
