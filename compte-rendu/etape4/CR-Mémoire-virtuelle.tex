@@ -107,6 +107,37 @@ git diff 78799ce7a7b788d0f3b501f0d85bab2f21c7190b
 
 \section{Test de l'étape 4}
 
+test
+
+\section{Notes : }
+
+On fait un decalage d'une page comme suit :
+dans le fichier \textit{code/userprog/addspace.cc}
+
+on remplace :
+\begin{lstlisting}
+        pageTable[i].virtualPage = i;
+        // for now, virtual page # = phys page #
+        pageTable[i].physicalPage = i;
+\end{lstlisting}
+
+Par :
+\begin{lstlisting}
+        pageTable[i].virtualPage = i;
+        // for now, virtual page # = phys page #
+        pageTable[i].physicalPage = i+1;
+\end{lstlisting}
+
+On peut voir le décallage d'une page :
+\begin{lstlisting}
+./build-origin/nachos-userprog -rs 1 -d a -x ./build/userpages
+...
+Reading VA 0x138, size 4
+    Translate 0x138, read: phys addr = 0x1b8
+    value read = 0000000c
+\end{lstlisting}
+
+
 
 \end{document}
 

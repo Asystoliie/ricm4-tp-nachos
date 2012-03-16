@@ -3,8 +3,10 @@
 #step2
 #COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/etape2'
 #step3
-COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/makethreads'
-COMMAND2='./build-origin/nachos-userprog -rs 1 -x ./build/jointhreads'
+#COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/makethreads'
+#COMMAND2='./build-origin/nachos-userprog -rs 1 -x ./build/jointhreads'
+#step 4
+COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/userpages'
 
 rm make_error.log 2> /dev/null
 
@@ -27,11 +29,6 @@ else
     echo "--------------------------------------"
     echo "$COMMAND"
     $COMMAND
-    echo "Fin Test 1"
-    echo "Lancement du Test 2 : Join :)"
-    echo "-----------------------------"
-    echo "$COMMAND2"
-    $COMMAND2
 fi
 rm make_error.log 2> /dev/null
 
