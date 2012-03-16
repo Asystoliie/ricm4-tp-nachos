@@ -135,14 +135,20 @@ AddrSpace::AddrSpace (OpenFile * executable)
     currentThread->setId(this->GetNewThreadId(zone));
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
-       numPages, size);
+        numPages, size);
+
+    // NumAvailFrame == atomique
+//    if ((int) numPages > frameprovider->NumAvailFrame()) {
+//        DEBUG ('p', "Pas suffisamment de memoire (%d / %d)!\n",numPages, frameprovider->NumAvailFrame ());
+//        return;
+//    }
 
     // first, set up the translation
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
         pageTable[i].virtualPage = i;
         // for now, virtual page # = phys page #
-        pageTable[i].physicalPage = i+1;
+        pageTable[i].physicalPage = frameprovider->GetEmptyFrame();
         pageTable[i].valid = TRUE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;

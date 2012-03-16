@@ -3,7 +3,7 @@
 
 void print(char c) {
     int j = 0;
-    for (j=0; j<120; j++) {
+    for (j=0; j<12; j++) {
         PutChar(c);
     }
 /*    UserThreadExit(); // Facultatif*/

@@ -30,6 +30,7 @@ SynchDisk *synchDisk;
 #ifdef USER_PROGRAM        // requires either FILESYS or FILESYS_STUB
 Machine *machine;        // user program memory and registers
 SynchConsole *synchconsole; // On déclare la synchconsole
+FrameProvider *frameprovider;
 #endif
 
 #ifdef NETWORK
@@ -159,6 +160,7 @@ Initialize (int argc, char **argv)
 #ifdef USER_PROGRAM
     machine = new Machine (debugUserProg);    // this must come first
     synchconsole = new SynchConsole(NULL, NULL); // On déclare la synchconsole sans aucun in/out
+    frameprovider = new FrameProvider(NumPhysPages);
 #endif
 
 #ifdef FILESYS
@@ -189,6 +191,7 @@ Cleanup ()
 #ifdef USER_PROGRAM
     delete machine;
     delete synchconsole;
+    delete frameprovider;
 #endif
 
 #ifdef FILESYS_NEEDED
@@ -205,3 +208,4 @@ Cleanup ()
 
     Exit (0);
 }
+
