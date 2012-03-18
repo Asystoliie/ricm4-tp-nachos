@@ -139,16 +139,21 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
     // NumAvailFrame == atomique
     if ((int) numPages > frameprovider->NumAvailFrame()) {
-        DEBUG ('p', "Pas suffisamment de memoire (%d / %d)!\n",numPages, frameprovider->NumAvailFrame ());
+        DEBUG ('p', "Pas suffisamment de memoire (%d / %d)!\n",numPages,
+                    frameprovider->NumAvailFrame ());
         return;
     }
 
     // first, set up the translation
     pageTable = new TranslationEntry[numPages];
+    int frame = -1;
     for (i = 0; i < numPages; i++) {
         pageTable[i].virtualPage = i;
         // for now, virtual page # = phys page #
-        pageTable[i].physicalPage = frameprovider->GetEmptyFrame();
+        frame = frameprovider->GetEmptyFrame();
+        if (frame == -1)
+            return;
+        pageTable[i].physicalPage = frame;
         pageTable[i].valid = TRUE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;

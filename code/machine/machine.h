@@ -25,6 +25,7 @@
 #include "utility.h"
 #include "translate.h"
 #include "disk.h"
+#include "synch.h"
 
 // Definitions related to the size, and format of user memory
 
@@ -182,11 +183,26 @@ class Machine {
     TranslationEntry *pageTable;
     unsigned int pageTableSize;
 
+    int runningProcess;
+    int idProcess;
+
+    Semaphore * semRunningProcess;
+    Semaphore * semIdProcess;
+
+    // Ces methodes permettent de manipuler les variables à protéger d'une
+    // utilisation multiprocess
+    void UpdateRunningProcess(int i);
+    // Permet de savoir si je suis le dernier processus
+    int Alone();
+    int GetNewPID();
+
   private:
-    bool singleStep;        // drop back into the debugger after each
-                // simulated instruction
-    int runUntilTime;        // drop back into the debugger when simulated
-                // time reaches this value
+    bool singleStep;
+    // drop back into the debugger after each
+    // simulated instruction
+    int runUntilTime;
+    // drop back into the debugger when simulated
+    // time reaches this value
 };
 
 extern void ExceptionHandler(ExceptionType which);
