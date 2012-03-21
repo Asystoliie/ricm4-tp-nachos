@@ -153,7 +153,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
         frame = frameprovider->GetEmptyFrame();
         if (frame == -1)
             return;
-        pageTable[i].physicalPage = frame;
+        pageTable[i].physicalPage = i;
         pageTable[i].valid = TRUE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;

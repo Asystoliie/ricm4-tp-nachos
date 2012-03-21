@@ -118,8 +118,8 @@ Machine::~Machine()
     delete [] mainMemory;
     if (tlb != NULL)
         delete [] tlb;
-    delete [] semRunningProcess;
-    delete [] semIdProcess;
+    delete semRunningProcess;
+    delete semIdProcess;
 }
 
 //----------------------------------------------------------------------
