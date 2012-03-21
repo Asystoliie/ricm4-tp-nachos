@@ -1,4 +1,3 @@
-
 #include "frameprovider.h"
 #include "system.h"
 

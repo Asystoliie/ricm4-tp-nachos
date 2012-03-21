@@ -153,7 +153,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
         frame = frameprovider->GetEmptyFrame();
         if (frame == -1)
             return;
-        pageTable[i].physicalPage = i;
+        pageTable[i].physicalPage = frame;
         pageTable[i].valid = TRUE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
@@ -190,16 +190,22 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
 AddrSpace::~AddrSpace ()
 {
-  // LB: Missing [] for delete
-  // delete pageTable;
-  delete [] pageTable;
-  delete [] threadZoneMap;
-  delete stackBitMap;
-  delete semRunningThreads;
-  delete semStackBitMap;
-  delete [] semJoinThreads;
-  delete semThreadZoneMap;
-  // End of modification
+    // LB: Missing [] for delete
+    // delete pageTable;
+    int frame;
+    for (unsigned j = 0; j < numPages; j++) {
+        frame = pageTable[j].physicalPage;
+        if (frame != -1)
+            frameprovider->ReleaseFrame(frame);
+    }
+    delete [] pageTable;
+    delete [] threadZoneMap;
+    delete stackBitMap;
+    delete semRunningThreads;
+    delete semStackBitMap;
+    delete [] semJoinThreads;
+    delete semThreadZoneMap;
+    // End of modification
 }
 
 //----------------------------------------------------------------------
@@ -261,6 +267,8 @@ void AddrSpace::InitThreadRegisters (int f, int arg, int thread_zone)
 void
 AddrSpace::SaveState ()
 {
+    pageTable = machine->pageTable;
+    numPages = machine->pageTableSize;
 }
 
 //----------------------------------------------------------------------

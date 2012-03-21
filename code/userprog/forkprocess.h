@@ -5,7 +5,7 @@
 #include "system.h"
 #include "syscall.h"
 
-extern int do_ForkExec (char *executable);
+extern int ForkExec (char *filename);
 
 extern void StartProcess (int arg);
 

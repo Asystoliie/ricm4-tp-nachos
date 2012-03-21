@@ -2,29 +2,42 @@
 #include "system.h"
 
 
-//    OpenFile *executable = fileSystem->Open (filename);
-//    AddrSpace *space;
+int ForkExec (char *filename)
+{
+    int pid = machine->GetNewPID();
 
-//    if (executable == NULL)
-//      {
-//	  printf ("Unable to open file %s\n", filename);
-//	  return;
-//      }
-//
-//      #ifdef CHANGED
-//    synchconsole = new SynchConsole (NULL, NULL);
-//	#endif // CHANGED
-//
-//    space = new AddrSpace (executable);
-//    currentThread->space = space;
+    OpenFile *executable = fileSystem->Open (filename);
+    AddrSpace *space;
 
-//    delete executable;		// close file
+    if (executable == NULL) {
+        printf ("Unable to open file %s\n", filename);
+        return -1;
+    }
 
-//    space->InitRegisters ();	// set the initial register values
-//    space->RestoreState ();	// load page table register
+    space = new AddrSpace (executable);
 
-//    machine->Run ();		// jump to the user progam
-//    ASSERT (FALSE);		// machine->Run never returns;
-//    // the address space exits
-//    // by doing the syscall "exit"
+    if (space == NULL) {
+        printf("%s : Memoire insuffisante pour charger l'executable.\n", filename);
+        delete (executable);
+        delete (space);
+        return -1;
+    }
+    delete executable;        // close file
+
+    currentThread->space->SaveState();
+    currentThread->SaveUserState();
+
+    currentThread->space = space;
+    currentThread->Fork (StartProcess, 0);
+
+    currentThread->RestoreUserState();
+    currentThread->space->RestoreState();
+    return pid;
+}
+
+void StartProcess(int arg) {
+    currentThread->space->InitRegisters();
+    machine->UpdateRunningProcess(1); // appel atomique
+    machine->Run();
+}
 
