@@ -94,6 +94,7 @@ class Thread
     // basic thread operations
 
     void Fork (VoidFunctionPtr func, int arg);	// Make thread run (*func)(arg)
+    void ForkProcess (VoidFunctionPtr func, int arg);	// Make main thread process run (*func)(arg)
 
     void Yield ();		// Relinquish the CPU if any
     // other thread is runnable
@@ -116,7 +117,8 @@ class Thread
     void setId (int value) { id = value; }
     int getZone() { return zone; }
     void setZone(int value) { zone = value; }
-    
+    const char *name;
+
   private:
     // some of the private data for this class is listed above
 
@@ -124,7 +126,6 @@ class Thread
     // NULL if this is the main thread
     // (If NULL, don't deallocate stack)
     ThreadStatus status;	// ready, running or blocked
-    const char *name;
 
     void StackAllocate (VoidFunctionPtr func, int arg);
     // Allocate a stack for thread.
@@ -160,3 +161,4 @@ extern "C"
 }
 
 #endif				// THREAD_H
+

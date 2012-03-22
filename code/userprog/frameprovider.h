@@ -8,20 +8,18 @@
 
 class FrameProvider {
     public:
-        FrameProvider (int n, bool rand);
         FrameProvider (int n);
         // Initialise le FrameProvider de n cadres.
         ~FrameProvider ();
-        int GetEmptyFrame ();
-        // Retourne le numero d'un cadre libre et initialise la page à zéro
+
+        // Retourne un tableau de n frames libres, ou NULL
+        // Se manipule en section critique
+        int * GetEmptyFrames(int n);
+        // Libere le cadre Nieme cadre, a protéger par un mutex
         void ReleaseFrame(int n);
-        // Libere le cadre Nieme cadre
-        int NumAvailFrame();
-        // Retourne le nombre de cadres disponibles
 
     private:
         int lenght;
-        bool random_acces;
         BitMap * bitmap;
         Semaphore * semFrameBitMap;
 };

@@ -37,7 +37,9 @@ StartProcess (char *filename)
     delete executable;        // close file
 
     space->InitRegisters ();    // set the initial register values
+    space->InitMainThread ();
     space->RestoreState ();    // load page table register
+    machine->UpdateRunningProcess(1);
 
     machine->Run ();        // jump to the user progam
     ASSERT (FALSE);        // machine->Run never returns;

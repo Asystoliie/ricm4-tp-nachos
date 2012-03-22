@@ -6,7 +6,7 @@
 #include "syscall.h"
 
 extern int do_ForkExec (char *filename);
-extern void StartForkedProcess (int arg);
+void StartForkedProcess (int arg);
 extern void do_Exit ();
 
 #endif

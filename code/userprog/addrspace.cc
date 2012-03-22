@@ -62,7 +62,7 @@ void ReadAtVirtual( OpenFile *executable, int virtualaddr, int numBytes,
     // On ecrit dans la mémoire virtuelle
     for (int i = 0; i < nb_read; i++)
         machine->WriteMem(virtualaddr+i, 1, buffer[i]);
-
+    delete buffer;
 }
 
 //----------------------------------------------------------------------
@@ -129,31 +129,22 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
     this->semThreadZoneMap = new Semaphore("threadZoneMap", 1);
 
-    // La zone 0 est pour le thread main
-    int zone = this->stackBitMap->Find();
-    currentThread->setZone(zone);
-    currentThread->setId(this->GetNewThreadId(zone));
-
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
         numPages, size);
 
     // NumAvailFrame == atomique
-    if ((int) numPages > frameprovider->NumAvailFrame()) {
-        DEBUG ('p', "Pas suffisamment de memoire (%d / %d)!\n",numPages,
-                    frameprovider->NumAvailFrame ());
+    int * frames = frameprovider->GetEmptyFrames((int) numPages);
+    if (frames == NULL) {
+        DEBUG ('p', "Pas suffisamment de memoire !\n");
         return;
     }
 
     // first, set up the translation
     pageTable = new TranslationEntry[numPages];
-    int frame = -1;
     for (i = 0; i < numPages; i++) {
         pageTable[i].virtualPage = i;
         // for now, virtual page # = phys page #
-        frame = frameprovider->GetEmptyFrame();
-        if (frame == -1)
-            return;
-        pageTable[i].physicalPage = frame;
+        pageTable[i].physicalPage = frames[i];
         pageTable[i].valid = TRUE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
@@ -162,7 +153,8 @@ AddrSpace::AddrSpace (OpenFile * executable)
         // a separate page, we could set its
         // pages to be read-only
     }
-
+    // On supprime ce tableau car plus besoin..
+    delete frames;
 
     // zero out the entire address space, to zero the unitialized data segment
     // and the stack segment
@@ -192,11 +184,8 @@ AddrSpace::~AddrSpace ()
 {
     // LB: Missing [] for delete
     // delete pageTable;
-    int frame;
     for (unsigned j = 0; j < numPages; j++) {
-        frame = pageTable[j].physicalPage;
-        if (frame != -1)
-            frameprovider->ReleaseFrame(frame);
+        frameprovider->ReleaseFrame(pageTable[j].physicalPage);
     }
     delete [] pageTable;
     delete [] threadZoneMap;
@@ -345,5 +334,11 @@ void AddrSpace::RemoveId(int zone){
     this->semThreadZoneMap->P();
     threadZoneMap[zone]=-1;
     this->semThreadZoneMap->V();
+}
+
+void AddrSpace::InitMainThread() {
+    int zone = this->GetNewZone();
+    currentThread->setZone(zone);
+    currentThread->setId(this->GetNewThreadId(zone));
 }
 

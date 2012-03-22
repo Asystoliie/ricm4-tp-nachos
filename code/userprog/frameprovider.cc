@@ -1,37 +1,18 @@
+#include <time.h>
+
 #include "frameprovider.h"
 #include "system.h"
 
 
+FrameProvider::FrameProvider (int n) {
+    this->lenght = n;
+    this->bitmap = new BitMap(this->lenght);
+    this->semFrameBitMap = new Semaphore("semFrameBitMap", 1);
+}
+
 FrameProvider::~FrameProvider () {
     delete bitmap;
 }
-
-
-FrameProvider::FrameProvider (int n, bool rand) {
-    this->lenght = n;
-    this->random_acces = rand;
-    this->bitmap = new BitMap(this->lenght);
-    this->semFrameBitMap = new Semaphore("semFrameBitMap", 1);
-}
-
-FrameProvider::FrameProvider (int n) {
-    this->lenght = n;
-    this->random_acces = false;
-    this->bitmap = new BitMap(this->lenght);
-    this->semFrameBitMap = new Semaphore("semFrameBitMap", 1);
-}
-
-
-int FrameProvider::GetEmptyFrame() {
-    int frame = -1;
-    this->semFrameBitMap->P();
-    frame = this->bitmap->Find();
-    this->semFrameBitMap->V();
-    if (frame != -1)
-        bzero(&(machine->mainMemory[ PageSize * frame ] ), PageSize );
-    return frame;
-}
-
 
 void FrameProvider::ReleaseFrame(int n) {
     this->semFrameBitMap->P();
@@ -39,14 +20,24 @@ void FrameProvider::ReleaseFrame(int n) {
     this->semFrameBitMap->V();
 }
 
-int FrameProvider::NumAvailFrame() {
+int * FrameProvider::GetEmptyFrames(int n) {
+    RandomInit(time(0));
     this->semFrameBitMap->P();
-    int num = 0;
-    for(int i = 0; i<this->lenght; i++) {
-        if (!this->bitmap->Test(i))
-            num++;
+    int * frames = NULL;
+    if (n <= this->bitmap->NumClear()) {
+        frames = new int[n];
+        for(int i=0; i<n; i++) {
+            int frame = Random()%NumPhysPages;
+            // Le +1 c'est juste car des fois frame = 0...
+            while(this->bitmap->Test(frame)) {
+                frame = Random()%NumPhysPages;
+            }
+            this->bitmap->Mark(frame);
+            bzero(&(machine->mainMemory[ PageSize * frame ] ), PageSize );
+            frames[i] = frame;
+        }
     }
     this->semFrameBitMap->V();
-    return num;
+    return frames;
 }
 

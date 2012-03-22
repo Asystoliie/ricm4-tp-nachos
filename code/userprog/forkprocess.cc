@@ -2,6 +2,13 @@
 #include "system.h"
 
 
+void StartForkedProcess(int arg) {
+    currentThread->space->InitRegisters ();
+    currentThread->space->RestoreState();
+    currentThread->space->InitMainThread();
+    machine->Run();
+}
+
 int do_ForkExec (char *filename)
 {
     OpenFile *executable = fileSystem->Open (filename);
@@ -9,41 +16,39 @@ int do_ForkExec (char *filename)
 
     if (executable == NULL) {
         printf ("Unable to open file %s\n", filename);
+        delete [] filename;
         return -1;
     }
 
     space = new AddrSpace (executable);
 
     if (space == NULL) {
-        printf("%s : Memoire insuffisante pour le lancer le processus.\n",
+        printf("%s : Insufficient memory to start the process.\n",
                      filename);
-        delete (executable);
-//        delete (space);
+        delete executable;
+        delete [] filename;
         return -1;
     }
 
     delete executable;
 
+
     Thread * mainThread = new Thread(filename);
     mainThread->space = space;
+//    mainThread->space->InitRegisters();
+    machine->UpdateRunningProcess(1); // appel atomique
+    mainThread->ForkProcess (StartForkedProcess, 0);
 
-    mainThread->Fork (StartForkedProcess, 0);
     return 0;
 }
 
 void do_Exit() {
+//    printf("ExitProcess : %s", currentThread->getName());
+    DEBUG('p', "ExitProcess : %s", currentThread->getName());
+    machine->UpdateRunningProcess(-1);
     if (machine->Alone()) {
         interrupt->Halt();
     }
-    AddrSpace * space = currentThread->space;
-    delete space;
-    machine->UpdateRunningProcess(-1);
     currentThread->Finish();
-}
-
-void StartForkedProcess(int arg) {
-    currentThread->space->InitRegisters();
-    machine->UpdateRunningProcess(1); // appel atomique
-    machine->Run();
 }
 

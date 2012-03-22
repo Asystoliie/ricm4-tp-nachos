@@ -112,7 +112,7 @@ ExceptionHandler (ExceptionType which)
         }
 
         case SC_Exit: {
-            DEBUG('a', "Exit, initiated by user program.\n");
+            DEBUG('p', "Explicit Exit, initiated by user program.\n");
             // Par defaut le thread main appel UserThreadExit et attend donc
             // les threads utilisateurs; mais Un appel explicite de Exit
             // n'attend aucun threads et quitte
@@ -178,7 +178,7 @@ ExceptionHandler (ExceptionType which)
 
         case SC_UserThreadCreate:
         {
-          DEBUG('a', "UserThreadCreate, initiated by user program.\n");
+          DEBUG('t', "UserThreadCreate, initiated by user program.\n");
 
           int f = machine->ReadRegister(4);
           int arg = machine->ReadRegister(5);
@@ -190,7 +190,7 @@ ExceptionHandler (ExceptionType which)
 
         case SC_UserThreadExit:
         {
-          DEBUG('a', "UserThreadExit, initiated by user program.\n");
+          DEBUG('t', "UserThreadExit, initiated by user program.\n");
           // Laisse les autres threads s'executer et attends jusqu'a ce qu'il se
           // termine tous
           do_UserThreadExit();
@@ -199,7 +199,7 @@ ExceptionHandler (ExceptionType which)
 
         case SC_UserThreadJoin:
         {
-          DEBUG('a', "UserThreadJoin, initiated by user program.\n");
+          DEBUG('t', "UserThreadJoin, initiated by user program.\n");
 
           int thread_id = machine->ReadRegister(4);
           int ret = do_UserThreadJoin(thread_id);
@@ -209,10 +209,13 @@ ExceptionHandler (ExceptionType which)
 
         case SC_ForkExec:
         {
-            DEBUG('a', "ForkExec, initiated by user program.\n");
+            DEBUG('p', "ForkExec, initiated by user program.\n");
             char *buffer = ReadStringFromMachine(machine->ReadRegister(4), MAX_STRING_SIZE);
             int ret = do_ForkExec(buffer);
-            delete [] buffer;
+            // On delete pas car le nom du fichier sert de nom pour le thread
+            // main du nouveau processus, il sera delete deletea  la destruction du
+            // thread
+            // delete [] buffer;
             machine->WriteRegister(2,ret);
             break;
         }

@@ -83,6 +83,8 @@ class AddrSpace
         void RemoveId(int zone);
         int GetZoneFromThreadId(int thread_id);
 
+        // Permet d'initialiser le thread main
+        void InitMainThread();
 
     private:
         TranslationEntry * pageTable;

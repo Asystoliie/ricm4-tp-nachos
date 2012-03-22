@@ -5,7 +5,6 @@ void StartUserThread(int thread) {
     UserThread *t = (UserThread *) thread;
     // L'id du thread informe egalement le numéro de page du thread
     currentThread->space->InitThreadRegisters(t->func, t->arg, t->getZone());
-    currentThread->space->UpdateRunningThreads(1); // appel atomique
     machine->Run();
 }
 
@@ -35,13 +34,13 @@ int do_UserThreadCreate(int f, int arg, int callback) {
     int thread_id = currentThread->space->GetNewThreadId(zone);
     if (thread_id < 0) { return 0; }
 
+    currentThread->space->UpdateRunningThreads(1); // appel atomique
+
     newThread->setId(thread_id);
     newThread->setZone(zone);
-
     // Avant de commencer on prend le jetton, pour que tout thread qui appelle
     // userThreadJoin sur moi soit bloqué.
     currentThread->space->semJoinThreads[newThread->getZone()]->P();
-
     newThread->Fork();
     return newThread->getId();
 }
