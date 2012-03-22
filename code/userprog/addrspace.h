@@ -83,17 +83,12 @@ class AddrSpace
         void RemoveId(int zone);
         int GetZoneFromThreadId(int thread_id);
 
-        // Pour gérer plusieurs processus
-        int getPid() { return pid; }
-        void setPid(int value) { pid = value; }
 
     private:
         TranslationEntry * pageTable;
         // Assume linear page table translation
         // for now!
         unsigned int numPages;
-        unsigned int pid;
-
         // Number of pages in the virtual
         // address space
 };

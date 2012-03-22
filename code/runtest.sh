@@ -6,7 +6,7 @@
 #COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/makethreads'
 #COMMAND2='./build-origin/nachos-userprog -rs 1 -x ./build/jointhreads'
 #step 4
-COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/userpages'
+COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/forkprocess'
 
 rm make_error.log 2> /dev/null
 
@@ -25,8 +25,8 @@ if test -s "make_error.log"; then
     echo "---------"
     cat make_error.log
 else
-    echo "Lancement du Test 1 : Create & Exit :)"
-    echo "--------------------------------------"
+    echo "Lancement du Test 1 :)"
+    echo "----------------------"
     echo "$COMMAND"
     $COMMAND
 fi

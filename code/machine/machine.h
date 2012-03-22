@@ -137,7 +137,7 @@ class Machine {
                     // Translate an address, and check for
                 // alignment.  Set the use and dirty bits in
                 // the translation entry appropriately,
-                    // and return an exception code if the
+                // and return an exception code if the
                 // translation couldn't be completed.
 
     void RaiseException(ExceptionType which, int badVAddr);
@@ -184,17 +184,14 @@ class Machine {
     unsigned int pageTableSize;
 
     int runningProcess;
-    int idProcess;
 
     Semaphore * semRunningProcess;
-    Semaphore * semIdProcess;
 
     // Ces methodes permettent de manipuler les variables à protéger d'une
     // utilisation multiprocess
     void UpdateRunningProcess(int i);
     // Permet de savoir si je suis le dernier processus
     int Alone();
-    int GetNewPID();
 
   private:
     bool singleStep;

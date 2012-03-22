@@ -2,10 +2,8 @@
 #include "system.h"
 
 
-int ForkExec (char *filename)
+int do_ForkExec (char *filename)
 {
-    int pid = machine->GetNewPID();
-
     OpenFile *executable = fileSystem->Open (filename);
     AddrSpace *space;
 
@@ -17,25 +15,33 @@ int ForkExec (char *filename)
     space = new AddrSpace (executable);
 
     if (space == NULL) {
-        printf("%s : Memoire insuffisante pour charger l'executable.\n", filename);
+        printf("%s : Memoire insuffisante pour le lancer le processus.\n",
+                     filename);
         delete (executable);
-        delete (space);
+//        delete (space);
         return -1;
     }
-    delete executable;        // close file
 
-    currentThread->space->SaveState();
-    currentThread->SaveUserState();
+    delete executable;
 
-    currentThread->space = space;
-    currentThread->Fork (StartProcess, 0);
+    Thread * mainThread = new Thread(filename);
+    mainThread->space = space;
 
-    currentThread->RestoreUserState();
-    currentThread->space->RestoreState();
-    return pid;
+    mainThread->Fork (StartForkedProcess, 0);
+    return 0;
 }
 
-void StartProcess(int arg) {
+void do_Exit() {
+    if (machine->Alone()) {
+        interrupt->Halt();
+    }
+    AddrSpace * space = currentThread->space;
+    delete space;
+    machine->UpdateRunningProcess(-1);
+    currentThread->Finish();
+}
+
+void StartForkedProcess(int arg) {
     currentThread->space->InitRegisters();
     machine->UpdateRunningProcess(1); // appel atomique
     machine->Run();

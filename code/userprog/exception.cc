@@ -26,6 +26,7 @@
 #include "syscall.h"
 #include "synchconsole.h"
 #include "userthread.h"
+#include "forkprocess.h"
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -115,7 +116,7 @@ ExceptionHandler (ExceptionType which)
             // Par defaut le thread main appel UserThreadExit et attend donc
             // les threads utilisateurs; mais Un appel explicite de Exit
             // n'attend aucun threads et quitte
-            interrupt->Halt();
+            do_Exit();
             break;
         }
 
@@ -206,6 +207,16 @@ ExceptionHandler (ExceptionType which)
           break;
         }
 
+        case SC_ForkExec:
+        {
+            DEBUG('a', "ForkExec, initiated by user program.\n");
+            char *buffer = ReadStringFromMachine(machine->ReadRegister(4), MAX_STRING_SIZE);
+            int ret = do_ForkExec(buffer);
+            delete [] buffer;
+            machine->WriteRegister(2,ret);
+            break;
+        }
+
         default: {
           printf("Unexpected user mode exception %d %d\n", which, type);
           ASSERT(FALSE);
@@ -219,3 +230,4 @@ ExceptionHandler (ExceptionType which)
     UpdatePC ();
     // End of addition
 }
+

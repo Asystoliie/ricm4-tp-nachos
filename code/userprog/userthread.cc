@@ -1,4 +1,5 @@
 #include "userthread.h"
+#include "forkprocess.h"
 
 void StartUserThread(int thread) {
     UserThread *t = (UserThread *) thread;
@@ -60,7 +61,7 @@ void do_UserThreadExit() {
 
     // Si je suis le thread seul/dernier thread, je termine le processus
     if(currentThread->space->Alone())
-        interrupt->Halt();
+        do_Exit();
 
     currentThread->Finish();
 }

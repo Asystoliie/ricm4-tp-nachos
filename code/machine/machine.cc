@@ -71,10 +71,8 @@ Machine::Machine(bool debug)
     pageTable = NULL;
 #endif
     runningProcess = 0;
-    idProcess = 0;
 
     semRunningProcess = new Semaphore("semRunningProcess", 1);
-    semIdProcess = new Semaphore("semIdProcess", 1);
 
     singleStep = debug;
     CheckEndian();
@@ -97,16 +95,6 @@ void Machine::UpdateRunningProcess(int value) {
     this->semRunningProcess->V();
 }
 
-int Machine::GetNewPID() {
-    int pid;
-    this->semRunningProcess->P();
-    pid = this->idProcess++;
-    DEBUG ('p', "runningProcess =  %d\n", this->runningProcess);
-    this->semRunningProcess->V();
-    return pid;
-}
-
-
 
 //----------------------------------------------------------------------
 // Machine::~Machine
@@ -119,7 +107,6 @@ Machine::~Machine()
     if (tlb != NULL)
         delete [] tlb;
     delete semRunningProcess;
-    delete semIdProcess;
 }
 
 //----------------------------------------------------------------------

@@ -267,8 +267,6 @@ void AddrSpace::InitThreadRegisters (int f, int arg, int thread_zone)
 void
 AddrSpace::SaveState ()
 {
-    pageTable = machine->pageTable;
-    numPages = machine->pageTableSize;
 }
 
 //----------------------------------------------------------------------

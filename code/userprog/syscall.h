@@ -38,6 +38,7 @@
 #define SC_UserThreadCreate 17
 #define SC_UserThreadExit 18
 #define SC_UserThreadJoin 19
+#define SC_ForkExec 20
 
 #ifdef IN_USER_MODE
 
@@ -151,8 +152,9 @@ int GetInt();
 int UserThreadCreate(void * f, void *arg);
 void UserThreadExit();
 int UserThreadJoin(int thread_id);
-
+int ForkExec(char * filename);
 
 #endif // IN_USER_MODE
 
 #endif /* SYSCALL_H */
+
