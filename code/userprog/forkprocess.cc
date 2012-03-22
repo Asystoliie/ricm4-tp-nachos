@@ -32,6 +32,9 @@ int do_ForkExec (char *filename)
 
     delete executable;
 
+    currentThread->SaveUserState();
+    currentThread->space->RestoreState();
+
 
     Thread * mainThread = new Thread(filename);
     mainThread->space = space;

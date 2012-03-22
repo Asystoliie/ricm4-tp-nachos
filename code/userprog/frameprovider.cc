@@ -21,7 +21,7 @@ void FrameProvider::ReleaseFrame(int n) {
 }
 
 int * FrameProvider::GetEmptyFrames(int n) {
-    RandomInit(time(0));
+    RandomInit(0);
     this->semFrameBitMap->P();
     int * frames = NULL;
     if (n <= this->bitmap->NumClear()) {
