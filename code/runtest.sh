@@ -6,8 +6,7 @@
 #COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/makethreads'
 #COMMAND2='./build-origin/nachos-userprog -rs 1 -x ./build/jointhreads'
 #step 4
-#COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/userpages'
-COMMAND2='./build-origin/nachos-userprog -rs 1 -x ./build/forkprocess'
+COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/forkprocess'
 
 rm make_error.log 2> /dev/null
 
@@ -30,8 +29,6 @@ else
     echo "----------------------"
     echo "$COMMAND"
     $COMMAND
-    echo "$COMMAND2"
-    $COMMAND2
 
 fi
 rm make_error.log 2> /dev/null

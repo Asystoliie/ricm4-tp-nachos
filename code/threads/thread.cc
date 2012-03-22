@@ -101,31 +101,12 @@ Thread::Fork (VoidFunctionPtr func, int arg)
     // an already running program, as in the "fork" Unix system call.
 
     // LB: Observe that currentThread->space may be NULL at that time.
-    this->space = currentThread->space;
+    // Si le space est déjà initialisé, ca veut dire qu'on fork un processus
+    // et non plus un simple user thread
+    if (this->space == NULL) {
+        this->space = currentThread->space;
+    }
 
-#endif // USER_PROGRAM
-
-    IntStatus oldLevel = interrupt->SetLevel (IntOff);
-    scheduler->ReadyToRun (this);    // ReadyToRun assumes that interrupts
-    // are disabled!
-    (void) interrupt->SetLevel (oldLevel);
-}
-
-void Thread::ForkProcess (VoidFunctionPtr func, int arg)
-{
-    DEBUG ('t', "Forking Process \"%s\" with func = 0x%x, arg = %d\n",
-       name, (int) func, arg);
-
-    StackAllocate (func, arg);
-
-#ifdef USER_PROGRAM
-
-    // LB: The addrspace should be tramsitted here, instead of later in
-    // StartProcess, so that the pageTable can be restored at
-    // launching time. This is crucial if the thread is launched with
-    // an already running program, as in the "fork" Unix system call.
-
-    // LB: Observe that currentThread->space may be NULL at that time.
 #endif // USER_PROGRAM
 
     IntStatus oldLevel = interrupt->SetLevel (IntOff);

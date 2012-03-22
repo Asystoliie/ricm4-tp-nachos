@@ -38,15 +38,14 @@ int do_ForkExec (char *filename)
 
     Thread * mainThread = new Thread(filename);
     mainThread->space = space;
-//    mainThread->space->InitRegisters();
+
     machine->UpdateRunningProcess(1); // appel atomique
-    mainThread->ForkProcess (StartForkedProcess, 0);
+    mainThread->Fork (StartForkedProcess, 0);
 
     return 0;
 }
 
 void do_Exit() {
-//    printf("ExitProcess : %s", currentThread->getName());
     DEBUG('p', "ExitProcess : %s", currentThread->getName());
     machine->UpdateRunningProcess(-1);
     if (machine->Alone()) {
