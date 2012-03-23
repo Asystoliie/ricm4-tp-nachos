@@ -71,7 +71,7 @@ Machine::Machine(bool debug)
     pageTable = NULL;
 #endif
     runningProcess = 0;
-
+    semThreadFork = new Semaphore("semThreadFork", 1);
     semRunningProcess = new Semaphore("semRunningProcess", 1);
 
     singleStep = debug;

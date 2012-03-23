@@ -1,16 +1,17 @@
 #include "forkprocess.h"
 #include "system.h"
 
-
 void StartForkedProcess(int arg) {
     currentThread->space->RestoreState();
     currentThread->space->InitRegisters ();
     currentThread->space->InitMainThread();
+    machine->semThreadFork->V();
     machine->Run();
 }
 
 int do_ForkExec (char *filename)
 {
+    machine->semThreadFork->P();
     OpenFile *executable = fileSystem->Open (filename);
     AddrSpace *space;
 
@@ -22,9 +23,6 @@ int do_ForkExec (char *filename)
     // Creation d'un nouvel espace d'adressage
     space = new AddrSpace (executable);
 
-    // On restaure la table des pages car elle est modifié par ReadAtVirtual
-//    currentThread->space->RestoreState();
-
     // Si c'est null on arrete la
     if (space == NULL) {
         printf("%s : Insufficient memory to start the process.\n",
@@ -35,7 +33,6 @@ int do_ForkExec (char *filename)
     }
 
     delete executable;
-
 
     Thread * mainThread = new Thread(filename);
     mainThread->space = space;
