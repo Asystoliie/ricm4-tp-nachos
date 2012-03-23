@@ -4,15 +4,15 @@
 
 int main() {
     PutString("Début du père\n...");
-    int result = ForkExec("/home/salem/project/nachos/code/build/putstring");
+    int result = ForkExec("./build/putstring");
     if (result < 0) {
         PutString("oups Fils 0 mort né\n");
     };
-    result = ForkExec("/home/salem/project/nachos/code/build/putstring");
+    result = ForkExec("./build/putstring");
     if (result < 0) {
         PutString("oups Fils 1 mort né\n");
     };
-    result = ForkExec("/home/salem/project/nachos/code/build/userpages2");
+    result = ForkExec("./build/userpages2");
     if (result < 0) {
         PutString("oups Fils 2 mort né\n");
     };

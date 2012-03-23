@@ -1,6 +1,6 @@
 #include "syscall.h"
 
 int main() {
-    PutString("Salem fait du beau boulot je trouve\n");
+    PutString("Elizabeth mange beaucoups\n");
     return 0;
 }
