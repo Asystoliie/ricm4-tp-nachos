@@ -28,7 +28,7 @@ int * FrameProvider::GetEmptyFrames(int n) {
         frames = new int[n];
         for(int i=0; i<n; i++) {
             int frame = Random()%NumPhysPages;
-            // Le +1 c'est juste car des fois frame = 0...
+            // Recherche d'une page libre
             while(this->bitmap->Test(frame)) {
                 frame = Random()%NumPhysPages;
             }

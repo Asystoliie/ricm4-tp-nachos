@@ -12,7 +12,7 @@ void print(char c) {
 int main() {
     int i = 0;
     for (i=0; i<3000; i++) {}
-    PutString("Début du fils 2 : lancement des deux threads a et z\n");
+    PutString("Début du fils 2 : lancement des deux threads c et x\n");
     int t1, t2;
     t1 = UserThreadCreate(print, (void *)'c');
     t2 = UserThreadCreate(print, (void *)'x');

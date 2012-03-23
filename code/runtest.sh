@@ -29,7 +29,6 @@ else
     echo "----------------------"
     echo "$COMMAND"
     $COMMAND
-
 fi
 rm make_error.log 2> /dev/null
 

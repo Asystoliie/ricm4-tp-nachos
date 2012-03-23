@@ -53,6 +53,8 @@ void ReadAtVirtual( OpenFile *executable, int virtualaddr, int numBytes,
     * Ensuite on lit a partir de mémoire physique pour recopie octet
     * par octet dans la mémoire virtuelle (par un buffer par sécurité)
     */
+    TranslationEntry * old_pageTable = machine->pageTable;
+    unsigned int old_numPages = machine->pageTableSize;
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
     //buffer to read the specified portion of executable
@@ -63,6 +65,9 @@ void ReadAtVirtual( OpenFile *executable, int virtualaddr, int numBytes,
     for (int i = 0; i < nb_read; i++)
         machine->WriteMem(virtualaddr+i, 1, buffer[i]);
     delete buffer;
+    machine->pageTable = old_pageTable;
+    machine->pageTableSize = old_numPages;
+
 }
 
 //----------------------------------------------------------------------
@@ -256,8 +261,6 @@ void AddrSpace::InitThreadRegisters (int f, int arg, int thread_zone)
 void
 AddrSpace::SaveState ()
 {
-    pageTable = machine->pageTable;
-    numPages = machine->pageTableSize;
 }
 
 //----------------------------------------------------------------------
