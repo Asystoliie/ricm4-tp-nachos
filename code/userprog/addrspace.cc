@@ -45,15 +45,15 @@ SwapHeader (NoffHeader * noffH)
     noffH->uninitData.inFileAddr = WordToHost (noffH->uninitData.inFileAddr);
 }
 
+
 void ReadAtVirtual( OpenFile *executable, int virtualaddr, int numBytes,
                     int position, TranslationEntry *pageTable,
                     unsigned int numPages ) {
-    /* Lecture depuis la mémoire virtuelle
+    /* Ecriture dans la mémoire virtuelle
     * On commence par initialisé les table de pages dans la machine
     * Ensuite on lit a partir de mémoire physique pour recopie octet
-    * par octet dans la mémoire virtuelle (par un buffer par sécurité)
+    * par octet dans la mémoire virtuelle (avec un buffer par sécurité)
     */
-    IntStatus oldLevel = interrupt->SetLevel (IntOff);
     TranslationEntry * old_pageTable = machine->pageTable;
     unsigned int old_numPages = machine->pageTableSize;
     machine->pageTable = pageTable;
@@ -67,10 +67,9 @@ void ReadAtVirtual( OpenFile *executable, int virtualaddr, int numBytes,
     for (int i = 0; i < nb_read; i++)
         machine->WriteMem(virtualaddr+i, 1, buffer[i]);
     //delete buffer;
+    // On restore le context
     machine->pageTable = old_pageTable;
     machine->pageTableSize = old_numPages;
-    (void) interrupt->SetLevel (oldLevel);
-
 }
 
 //----------------------------------------------------------------------
@@ -189,11 +188,7 @@ AddrSpace::~AddrSpace ()
 {
     printf("\n=====Bouhhh=======\n");
     // LB: Missing [] for delete
-    // delete pageTable;
-    for (unsigned j = 0; j < numPages; j++) {
-        frameprovider->ReleaseFrame(pageTable[j].physicalPage);
-    }
-    delete [] pageTable;
+    ReleaseFrames();
     delete [] threadZoneMap;
     delete stackBitMap;
     delete semRunningThreads;
@@ -348,5 +343,13 @@ void AddrSpace::InitMainThread() {
     int zone = this->GetNewZone();
     currentThread->setZone(zone);
     currentThread->setId(this->GetNewThreadId(zone));
+}
+
+
+void AddrSpace::ReleaseFrames() {
+    for (unsigned j = 0; j < this->numPages; j++) {
+        frameprovider->ReleaseFrame(this->pageTable[j].physicalPage);
+    }
+    delete [] pageTable;
 }
 

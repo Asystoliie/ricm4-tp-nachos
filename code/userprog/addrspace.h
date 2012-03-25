@@ -85,6 +85,7 @@ class AddrSpace
 
         // Permet d'initialiser le thread main
         void InitMainThread();
+        void ReleaseFrames();
         bool AvailFrames;
 
     private:

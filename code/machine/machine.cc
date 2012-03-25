@@ -71,7 +71,6 @@ Machine::Machine(bool debug)
     pageTable = NULL;
 #endif
     runningProcess = 0;
-    semThreadFork = new Semaphore("semThreadFork", 1);
     semRunningProcess = new Semaphore("semRunningProcess", 1);
 
     singleStep = debug;
@@ -88,7 +87,7 @@ int Machine::Alone() {
 }
 
 void Machine::UpdateRunningProcess(int value) {
-    ASSERT (value != 1 || value !=-1);
+    ASSERT (value == 1 || value ==-1);
     this->semRunningProcess->P();
     this->runningProcess += value;
     DEBUG ('p', "runningProcess =  %d\n", this->runningProcess);

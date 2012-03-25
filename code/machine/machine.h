@@ -184,9 +184,7 @@ class Machine {
     unsigned int pageTableSize;
 
     int runningProcess;
-
     Semaphore * semRunningProcess;
-    Semaphore * semThreadFork;
 
     // Ces methodes permettent de manipuler les variables à protéger d'une
     // utilisation multiprocess

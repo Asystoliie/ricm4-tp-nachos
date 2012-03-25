@@ -21,7 +21,7 @@ int do_ForkExec (char *filename)
     // Creation d'un nouvel espace d'adressage
     space = new AddrSpace (executable);
 
-    // Si c'est null on arrete la
+    // Si c'est null ou qu'il n'y a pas assez de memoire on arrete la
     if (space == NULL || !space->AvailFrames) {
         printf("%s : Insufficient memory to start the process.\n",
                      filename);
@@ -31,7 +31,7 @@ int do_ForkExec (char *filename)
     }
     delete executable;
 
-
+    // Creation du nouveau thread main du nouveau processus
     Thread * mainThread = new Thread(filename);
     mainThread->space = space;
     machine->UpdateRunningProcess(1); // appel atomique
@@ -47,7 +47,10 @@ void do_Exit() {
         interrupt->Halt();
     }
 
-//    delete currentThread->space;
+    // /!\ Provoque une erreur
+    // delete currentThread->space;
+    // On libere les frames c'est la fin du processus
+    currentThread->space->ReleaseFrames();
     currentThread->Finish();
 }
 
