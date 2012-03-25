@@ -6,11 +6,11 @@ void print(char c) {
         for (i=0; i<3000; i++) {}
         PutChar(c);
     }
-/*    UserThreadExit(); // Facultatif*/
+    UserThreadExit(); // Facultatif
 }
 
 int main() {
-    int i = 0;
+    int i;
     for (i=0; i<3000; i++) {}
     PutString("Début du fils 0 : lancement des deux threads a et z\n");
     int t1, t2;

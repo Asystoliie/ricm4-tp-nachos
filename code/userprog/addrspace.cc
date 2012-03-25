@@ -53,20 +53,23 @@ void ReadAtVirtual( OpenFile *executable, int virtualaddr, int numBytes,
     * Ensuite on lit a partir de mémoire physique pour recopie octet
     * par octet dans la mémoire virtuelle (par un buffer par sécurité)
     */
+    IntStatus oldLevel = interrupt->SetLevel (IntOff);
     TranslationEntry * old_pageTable = machine->pageTable;
     unsigned int old_numPages = machine->pageTableSize;
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
     //buffer to read the specified portion of executable
-    char * buffer = new char[numBytes];
+    char buffer[numBytes];
+    //char * buffer = new char[numBytes];
     // On lit au plus numBytes octets
     int nb_read = executable->ReadAt(buffer, numBytes, position);
     // On ecrit dans la mémoire virtuelle
     for (int i = 0; i < nb_read; i++)
         machine->WriteMem(virtualaddr+i, 1, buffer[i]);
-    delete buffer;
+    //delete buffer;
     machine->pageTable = old_pageTable;
     machine->pageTableSize = old_numPages;
+    (void) interrupt->SetLevel (oldLevel);
 
 }
 
@@ -103,14 +106,8 @@ AddrSpace::AddrSpace (OpenFile * executable)
     numPages = divRoundUp (size, PageSize);
     size = numPages * PageSize;
 
-    ASSERT (numPages <= NumPhysPages);
-    // check we're not trying
-    // to run anything too big --
-    // at least until we have
-    // virtual memory
-
     // Le nombre de thread en cours d'executions (à protéger par un mutex)
-    this->runningThreads = 1; // 1 = le thread main//currentThread
+    this->runningThreads = 0; // 1 = le thread main//currentThread
     // l'objet bitmap qui permet de trouver les zones libres pour les
     // nouveaux threads, sans devoir gérer ça nous meme..
     // Ici on gere X zones de `UserThreadNumPage` pages
@@ -137,15 +134,18 @@ AddrSpace::AddrSpace (OpenFile * executable)
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
         numPages, size);
 
+    // first, set up the translation
+    pageTable = new TranslationEntry[numPages];
+
     // NumAvailFrame == atomique
     int * frames = frameprovider->GetEmptyFrames((int) numPages);
     if (frames == NULL) {
         DEBUG ('p', "Pas suffisamment de memoire !\n");
+        this->AvailFrames = false;
         return;
+    } else {
+        this->AvailFrames = true;
     }
-
-    // first, set up the translation
-    pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
         pageTable[i].virtualPage = i;
         // for now, virtual page # = phys page #
@@ -187,6 +187,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
 AddrSpace::~AddrSpace ()
 {
+    printf("\n=====Bouhhh=======\n");
     // LB: Missing [] for delete
     // delete pageTable;
     for (unsigned j = 0; j < numPages; j++) {
@@ -216,7 +217,6 @@ void
 AddrSpace::InitRegisters ()
 {
     int i;
-
     for (i = 0; i < NumTotalRegs; i++)
     machine->WriteRegister (i, 0);
 
@@ -261,6 +261,8 @@ void AddrSpace::InitThreadRegisters (int f, int arg, int thread_zone)
 void
 AddrSpace::SaveState ()
 {
+    pageTable = machine->pageTable;
+    numPages = machine->pageTableSize;
 }
 
 //----------------------------------------------------------------------
@@ -342,6 +344,7 @@ void AddrSpace::RemoveId(int zone){
 }
 
 void AddrSpace::InitMainThread() {
+    this->UpdateRunningThreads(1); // appel atomique
     int zone = this->GetNewZone();
     currentThread->setZone(zone);
     currentThread->setId(this->GetNewThreadId(zone));

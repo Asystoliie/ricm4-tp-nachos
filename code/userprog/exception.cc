@@ -134,7 +134,8 @@ ExceptionHandler (ExceptionType which)
           // MAX_STRING_SIZE est defni prealablement dans code/threads/system.h
           char *buffer = ReadStringFromMachine(machine->ReadRegister(4), MAX_STRING_SIZE);
           synchconsole->SynchPutString(buffer);
-          delete [] buffer;
+          // /!\ big probleme qui fait planter Nachos
+          //delete [] buffer;
           break;
         }
 
@@ -154,10 +155,9 @@ ExceptionHandler (ExceptionType which)
           // On donne pas acceder à la mémoire directement,on ecrit ecrit dans
           // un buffer..
           // Peut etre pas obligé, mais au cas ou on utilise un buffer..
-          char * buffer = new char[MAX_STRING_SIZE];
+          char buffer[MAX_STRING_SIZE];
           synchconsole->SynchGetString(buffer, size);
           WriteStringToMachine(buffer, to, size);
-          delete [] buffer;
           break;
         }
 
@@ -179,7 +179,6 @@ ExceptionHandler (ExceptionType which)
         case SC_UserThreadCreate:
         {
           DEBUG('t', "UserThreadCreate, initiated by user program.\n");
-
           int f = machine->ReadRegister(4);
           int arg = machine->ReadRegister(5);
           int callback = machine->ReadRegister(6);

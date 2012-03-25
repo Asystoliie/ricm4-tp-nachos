@@ -5,13 +5,11 @@ void StartForkedProcess(int arg) {
     currentThread->space->RestoreState();
     currentThread->space->InitRegisters ();
     currentThread->space->InitMainThread();
-    machine->semThreadFork->V();
     machine->Run();
 }
 
 int do_ForkExec (char *filename)
 {
-    machine->semThreadFork->P();
     OpenFile *executable = fileSystem->Open (filename);
     AddrSpace *space;
 
@@ -24,19 +22,18 @@ int do_ForkExec (char *filename)
     space = new AddrSpace (executable);
 
     // Si c'est null on arrete la
-    if (space == NULL) {
+    if (space == NULL || !space->AvailFrames) {
         printf("%s : Insufficient memory to start the process.\n",
                      filename);
         delete executable;
         delete [] filename;
         return -1;
     }
-
     delete executable;
+
 
     Thread * mainThread = new Thread(filename);
     mainThread->space = space;
-
     machine->UpdateRunningProcess(1); // appel atomique
     mainThread->Fork (StartForkedProcess, 0);
 
@@ -49,7 +46,7 @@ void do_Exit() {
     if (machine->Alone()) {
         interrupt->Halt();
     }
-//    AddrSpace *space = currentThread->space;
+
 //    delete currentThread->space;
     currentThread->Finish();
 }

@@ -7,6 +7,7 @@
 #COMMAND2='./build-origin/nachos-userprog -rs 1 -x ./build/jointhreads'
 #step 4
 COMMAND='./build-origin/nachos-userprog -rs 1 -x ./build/forkprocess'
+COMMAND2='./build-origin/nachos-userprog -rs 1 -x ./build/forkthreadedprocess'
 
 rm make_error.log 2> /dev/null
 
@@ -25,10 +26,16 @@ if test -s "make_error.log"; then
     echo "---------"
     cat make_error.log
 else
-    echo "Lancement du Test 1 :)"
-    echo "----------------------"
+    echo "Lancement du Test 1 : ForkExec PutString"
+    echo "----------------------------------------"
     echo "$COMMAND"
     $COMMAND
+    echo; echo
+    echo "Lancement du Test 2 : ForkExec With Thread"
+    echo "------------------------------------------"
+    echo "$COMMAND2"
+    $COMMAND2
+
 fi
 rm make_error.log 2> /dev/null
 

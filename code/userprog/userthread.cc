@@ -1,11 +1,14 @@
 #include "userthread.h"
 #include "forkprocess.h"
 
+
 void StartUserThread(int thread) {
     UserThread *t = (UserThread *) thread;
     // L'id du thread informe egalement le numéro de page du thread
+//    IntStatus oldLevel = interrupt->SetLevel (IntOff);
     currentThread->space->InitThreadRegisters(t->func, t->arg, t->getZone());
-    machine->semThreadFork->V();
+//    (void) interrupt->SetLevel (oldLevel);
+    currentThread->space->UpdateRunningThreads(1); // appel atomique
     machine->Run();
 }
 
@@ -26,7 +29,6 @@ void UserThread::UpdateCallBackRegister(int value) {
 }
 
 int do_UserThreadCreate(int f, int arg, int callback) {
-    machine->semThreadFork->P();
     UserThread* newThread = new UserThread((char*)f, f, arg, callback);
     if (newThread == NULL) { return -1; } // Erreur
 
@@ -34,17 +36,17 @@ int do_UserThreadCreate(int f, int arg, int callback) {
     if (zone < 0) { delete newThread; return 0; }
 
     int thread_id = currentThread->space->GetNewThreadId(zone);
-    currentThread->space->UpdateRunningThreads(1); // appel atomique
+    if (thread_id < 0) { return 0; }
 
     newThread->setId(thread_id);
     newThread->setZone(zone);
+
     // Avant de commencer on prend le jetton, pour que tout thread qui appelle
     // userThreadJoin sur moi soit bloqué.
     currentThread->space->semJoinThreads[newThread->getZone()]->P();
-    // "Fork atomique"
+
     newThread->Fork();
     return newThread->getId();
-
 }
 
 void do_UserThreadExit() {
@@ -62,6 +64,7 @@ void do_UserThreadExit() {
 
     // Si je suis le thread seul/dernier thread, je termine le processus
     if(currentThread->space->Alone()) {
+//        interrupt->Halt();
         do_Exit();
     }
     else {

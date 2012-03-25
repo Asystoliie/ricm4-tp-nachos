@@ -8,7 +8,6 @@ static Semaphore *readAvail;
 static Semaphore *writeDone;
 static Semaphore *writeMutex;
 static Semaphore *readMutex;
-static Semaphore * putStringMutex;
 
 static void ReadAvail(int arg) {
     readAvail->V();
@@ -23,7 +22,7 @@ SynchConsole::SynchConsole(char *readFile, char *writeFile) {
     writeDone  = new Semaphore("write done", 0);
     writeMutex = new Semaphore("writeMutex", 1);
     readMutex  = new Semaphore("readMutex", 1);
-    putStringMutex = new Semaphore("putStringMutex", 1);
+    this->putStringMutex = new Semaphore("putStringMutex", 1);
     console    = new Console (readFile, writeFile, ReadAvail, WriteDone, 0);
 }
 
@@ -33,6 +32,7 @@ SynchConsole::~SynchConsole() {
     delete readAvail;
     delete writeMutex;
     delete readMutex;
+    delete putStringMutex;
 }
 
 void SynchConsole::SynchPutChar(const char ch) {
@@ -55,18 +55,18 @@ char SynchConsole::SynchGetChar() {
     readMutex->V();
 }
 
-void SynchConsole::SynchPutString(const char string[]) {
+void SynchConsole::SynchPutString(char * string) {
     /* On utilise un mutex pour que les appels SynchPutString soient atomiques
      * C'est à dire que deux appels à SynchPutString() affichent correctement
      * les chaines de caractères...
      * * */
-    putStringMutex->P();
+    this->putStringMutex->P();
     for(int i=0; i<MAX_STRING_SIZE-1;i++) {
         if(string[i] == '\0')
             break;
         this->SynchPutChar(string[i]);
     }
-    putStringMutex->V();
+    this->putStringMutex->V();
 }
 
 void SynchConsole::SynchGetString(char *buffer, int n, char delim) {

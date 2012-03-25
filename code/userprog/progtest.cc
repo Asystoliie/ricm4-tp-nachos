@@ -35,9 +35,9 @@ StartProcess (char *filename)
     currentThread->space = space;
 
     delete executable;        // close file
+    space->RestoreState ();    // load page table register
     space->InitRegisters ();    // set the initial register values
     space->InitMainThread ();
-    space->RestoreState ();    // load page table register
     machine->UpdateRunningProcess(1);
 
     machine->Run ();        // jump to the user progam
