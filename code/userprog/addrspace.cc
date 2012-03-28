@@ -177,6 +177,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
         ReadAtVirtual(executable, noffH.initData.virtualAddr,
           noffH.initData.size, noffH.initData.inFileAddr, pageTable, numPages);
     }
+    this->ToBeDestroyed = false;
 }
 
 //----------------------------------------------------------------------
@@ -186,14 +187,13 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
 AddrSpace::~AddrSpace ()
 {
-    printf("\n=====Bouhhh=======\n");
     // LB: Missing [] for delete
     ReleaseFrames();
+    delete [] pageTable;
     delete [] threadZoneMap;
     delete stackBitMap;
     delete semRunningThreads;
     delete semStackBitMap;
-    delete [] semJoinThreads;
     delete semThreadZoneMap;
     // End of modification
 }
@@ -350,6 +350,5 @@ void AddrSpace::ReleaseFrames() {
     for (unsigned j = 0; j < this->numPages; j++) {
         frameprovider->ReleaseFrame(this->pageTable[j].physicalPage);
     }
-    delete [] pageTable;
 }
 

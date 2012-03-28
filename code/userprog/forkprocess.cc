@@ -46,11 +46,7 @@ void do_Exit() {
     if (machine->Alone()) {
         interrupt->Halt();
     }
-
-    // /!\ Provoque une erreur
-    // delete currentThread->space;
-    // On libere les frames c'est la fin du processus
-    currentThread->space->ReleaseFrames();
+    currentThread->space->ToBeDestroyed = true;
     currentThread->Finish();
 }
 

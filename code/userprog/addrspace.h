@@ -87,6 +87,7 @@ class AddrSpace
         void InitMainThread();
         void ReleaseFrames();
         bool AvailFrames;
+        bool ToBeDestroyed;
 
     private:
         TranslationEntry * pageTable;
