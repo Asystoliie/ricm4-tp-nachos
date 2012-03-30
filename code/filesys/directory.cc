@@ -41,9 +41,9 @@ Directory::Directory(int size)
     tableSize = size;
     for (int i = 0; i < tableSize; i++)
         table[i].inUse = false;
-	int sector = 1;
-	int parentSector = 1; // pas de parent pour la racine
-	makeDirHierarchy(sector, parentSector);
+    int sector = 1;
+    int parentSector = 1; // pas de parent pour la racine
+    makeDirHierarchy(sector, parentSector);
 }
 
 Directory::Directory(int size, char *name, int sector, int parentSector) {
@@ -51,7 +51,7 @@ Directory::Directory(int size, char *name, int sector, int parentSector) {
     table = new DirectoryEntry[size];
     tableSize = size;
     for (int i = 2; i < tableSize; i++)
-    	table[i].inUse = false;
+        table[i].inUse = false;
     makeDirHierarchy(sector, parentSector);
 }
 
@@ -224,7 +224,7 @@ int Directory::getSector(int position) {
   return table[position].sector;
 }
 
-//true if all the entries are occupied
+
 bool Directory::isFull() {
   for (int i = 0; i < tableSize; i++) {
     if(table[i].inUse == false)
