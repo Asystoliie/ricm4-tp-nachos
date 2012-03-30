@@ -3,6 +3,11 @@ code/build/*
 !code/build/Makefile
 code/build-origin/*
 !code/build-origin/Makefile
+
+code/filesys/*
+!code/filesys/Makefile
+!code/filesys/*.cc
+!code/filesys/*.h
 code/bin/coff2noff
 code/bin/*.o
 code/bin/.*.d
