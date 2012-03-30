@@ -357,21 +357,32 @@ void do_Exit() {
     if (machine->Alone()) {
         interrupt->Halt();
     }
-
-    // /!\ Provoque une erreur
-    // delete currentThread->space;
-    // On libere les frames c'est la fin du processus
-    currentThread->space->ReleaseFrames();
+    currentThread->space->ToBeDestroyed = true;
     currentThread->Finish();
 }
 \end{lstlisting}
 
-Nous n'avons par contre par trouvé comment Nachos procède à la destruction
-d'un espace d'adressage. En effet on ne peut détruire celui ci dans
-\textbf{do\_Exit()} puisque le thread est cours d'execution (même en train de
-terminé...). Autrement dit un processus ne peut pas se terminer lui
-même, mais un autre doit le faire. Nous nous contentons donc de libérer les
-frames pour le moment.
+Pour la destruction de l'espace d'addressage nous allons le faire une fois le
+thread détruit, et comme le currentThread ne se détruit pas lui même, il faut
+détruire l'espace d'adressage dans le destructeur du thread.
+
+\lstset{caption={\textit{code/threads/thread.cc}}}
+\begin{lstlisting}
+Thread::~Thread ()
+{
+    DEBUG ('t', "Deleting thread \"%s\"\n", name);
+
+    ASSERT (this != currentThread);
+    if (stack != NULL)
+    DeallocBoundedArray ((char *) stack, StackSize * sizeof (int));
+#ifdef USER_PROGRAM
+    if (space != NULL && space->ToBeDestroyed) {
+        delete space;
+    }
+#endif
+}
+\end{lstlisting}
+
 
 \end{document}
 
