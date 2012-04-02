@@ -25,6 +25,7 @@
 #include "filehdr.h"
 #include "directory.h"
 
+#define MAX_DIRNAME_SIZE 150
 //----------------------------------------------------------------------
 // Directory::Directory
 //     Initialize a directory; initially, the directory is completely
@@ -35,8 +36,7 @@
 //    "size" is the number of entries in the directory
 //----------------------------------------------------------------------
 
-Directory::Directory(int size)
-{
+Directory::Directory(int size) {
     table = new DirectoryEntry[size];
     tableSize = size;
     for (int i = 0; i < tableSize; i++)
@@ -46,8 +46,7 @@ Directory::Directory(int size)
     makeDirHierarchy(sector, parentSector);
 }
 
-Directory::Directory(int size, char *name, int sector, int parentSector) {
-
+Directory::Directory(int size, int sector, int parentSector) {
     table = new DirectoryEntry[size];
     tableSize = size;
     for (int i = 2; i < tableSize; i++)
@@ -174,6 +173,16 @@ Directory::Remove(const char *name)
     return TRUE;
 }
 
+bool Directory::Remove(int sector)
+{
+    for (int i = 2; i < tableSize; i++)
+        if (table[i].sector == sector) {
+            table[i].inUse = false;
+            return true;
+        }
+    return false;
+}
+
 //----------------------------------------------------------------------
 // Directory::List
 //     List all the file names in the directory.
@@ -220,13 +229,9 @@ void Directory::makeDirHierarchy(int sector, int parentSector) {
     strcpy(table[1].name, "..");
 }
 
-int Directory::getSector(int position) {
-  return table[position].sector;
-}
-
 
 bool Directory::isFull() {
-  for (int i = 0; i < tableSize; i++) {
+  for (int i = 2; i < tableSize; i++) {
     if(table[i].inUse == false)
       return false;
   }
@@ -241,5 +246,55 @@ bool Directory::isEmpty() {
       return false;
   }
   return true;
+}
+
+
+bool Directory::isRoot() {
+    // ". == ".."
+    return (table[0].sector == table[1].sector);
+};
+
+char * Directory::getNameFromSector(int sector) {
+    for (int i = 2; i < tableSize; i++)
+        if (table[i].sector == sector) {
+            return table[i].name;
+        }
+    return NULL;
+};
+
+int Directory::getSector(int position) {
+    return this->table[position].sector;
+}
+
+int Directory::getCurrentSector() {
+    return this->getSector(0);
+}
+
+int Directory::getParentSector() {
+    return this->getSector(1);
+}
+
+char * Directory::getDirName() {
+    Directory * currentDir = this;
+    Directory * parentDir;
+    int parentSector;
+    char * fullname = new char[MAX_DIRNAME_SIZE];
+    char * temp = new char[MAX_DIRNAME_SIZE];
+    strcpy(fullname, "/");
+    char * currentName = new char [MAX_DIRNAME_SIZE];
+    while (!currentDir->isRoot()) {
+        parentSector = currentDir->getParentSector();
+        OpenFile * parentDirFile = new OpenFile(parentSector);
+        parentDir = new Directory(this->tableSize);
+        parentDir->FetchFrom(parentDirFile);
+        currentName = parentDir->getNameFromSector(currentDir->getCurrentSector());
+
+        strcpy(temp, "/");
+        strcat(temp, currentName);
+        strcat(temp, fullname);
+        strcpy(fullname, temp);
+        currentDir = parentDir;
+    }
+    return fullname;
 }
 

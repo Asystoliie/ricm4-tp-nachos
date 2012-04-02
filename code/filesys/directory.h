@@ -52,8 +52,7 @@ class Directory {
   public:
     Directory(int size);    // Initialize an empty directory
                             // with space for "size" files
-    Directory(int size, char *name);
-    Directory(int size, char *name, int sector, int parentSector);
+    Directory(int size, int sector, int parentSector);
 
     ~Directory();           // De-allocate the directory
 
@@ -68,6 +67,7 @@ class Directory {
     // Add a file name into the directory
 
     bool Remove(const char *name);  // Remove a file from the directory
+    bool Remove(int sector);  // Remove a file from the directory
 
     void List();    // Print the names of all the files
                     //  in the directory
@@ -76,8 +76,15 @@ class Directory {
                     //  names and their contents.
     void makeDirHierarchy(int currentSector, int parentSector);
     int getSector(int position);
+    int getCurrentSector();
+    int getParentSector();
+
     bool isFull();
     bool isEmpty();
+    bool isRoot();
+
+    char * getNameFromSector(int sector);
+    char * getDirName();
 
   private:
     int tableSize;              // Number of directory entries
