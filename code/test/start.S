@@ -132,20 +132,8 @@ Yield:
     .globl PutChar
     .ent PutChar
 PutChar:
-    /* On place le signal dans le registre R2
-        Il va servir au handler d'exceptions pour qu'il puisse
-        savoir qui sera le traitant de cette exception.
-    */
     addiu $2,$0,SC_PutChar
-     /* syscall provoque un déroutement et place le compteur de
-        programme (PC) à la première instruction du traitant :
-        ExceptionHandler
-        */
     syscall
-     /* Maintenant on revient au programme appellant
-        Le registre R31 sauvegarde l'adresse de retour de la
-        fonction appellante
-        */
     j    $31
     .end PutChar
 
@@ -153,20 +141,8 @@ PutChar:
     .globl PutString
     .ent PutString
 PutString:
-    /* On place le signal dans le registre R2
-        Il va servir au handler d'exceptions pour qu'il puisse
-        savoir qui sera le traitant de cette exception.
-    */
     addiu $2,$0,SC_PutString
-     /* syscall provoque un déroutement et place le compteur de
-        programme (PC) à la première instruction du traitant :
-        ExceptionHandler
-        */
     syscall
-     /* Maintenant on revient au programme appellant
-        Le registre R31 sauvegarde l'adresse de retour de la
-        fonction appellante
-        */
     j    $31
     .end PutString
 
@@ -174,20 +150,8 @@ PutString:
     .globl GetChar
     .ent GetChar
 GetChar:
-    /* On place le signal dans le registre R2
-        Il va servir au handler d'exceptions pour qu'il puisse
-        savoir qui sera le traitant de cette exception.
-    */
     addiu $2,$0,SC_GetChar
-     /* syscall provoque un déroutement et place le compteur de
-        programme (PC) à la première instruction du traitant :
-        ExceptionHandler
-        */
     syscall
-     /* Maintenant on revient au programme appellant
-        Le registre R31 sauvegarde l'adresse de retour de la
-        fonction appellante
-        */
     j    $31
     .end GetChar
 
@@ -195,20 +159,8 @@ GetChar:
     .globl GetString
     .ent GetString
 GetString:
-    /* On place le signal dans le registre R2
-        Il va servir au handler d'exceptions pour qu'il puisse
-        savoir qui sera le traitant de cette exception.
-    */
     addiu $2,$0,SC_GetString
-     /* syscall provoque un déroutement et place le compteur de
-        programme (PC) à la première instruction du traitant :
-        ExceptionHandler
-        */
     syscall
-     /* Maintenant on revient au programme appellant
-        Le registre R31 sauvegarde l'adresse de retour de la
-        fonction appellante
-        */
     j    $31
     .end GetString
 
@@ -216,20 +168,8 @@ GetString:
     .globl PutInt
     .ent PutInt
 PutInt:
-    /* On place le signal dans le registre R2
-        Il va servir au handler d'exceptions pour qu'il puisse
-        savoir qui sera le traitant de cette exception.
-    */
     addiu $2,$0,SC_PutInt
-     /* syscall provoque un déroutement et place le compteur de
-        programme (PC) à la première instruction du traitant :
-        ExceptionHandler
-        */
     syscall
-     /* Maintenant on revient au programme appellant
-        Le registre R31 sauvegarde l'adresse de retour de la
-        fonction appellante
-        */
     j    $31
     .end PutInt
 
@@ -237,20 +177,8 @@ PutInt:
     .globl GetInt
     .ent GetInt
 GetInt:
-    /* On place le signal dans le registre R2
-        Il va servir au handler d'exceptions pour qu'il puisse
-        savoir qui sera le traitant de cette exception.
-    */
     addiu $2,$0,SC_GetInt
-     /* syscall provoque un déroutement et place le compteur de
-        programme (PC) à la première instruction du traitant :
-        ExceptionHandler
-        */
     syscall
-     /* Maintenant on revient au programme appellant
-        Le registre R31 sauvegarde l'adresse de retour de la
-        fonction appellante
-        */
     j    $31
     .end GetInt
 
